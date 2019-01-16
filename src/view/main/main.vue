@@ -1,7 +1,7 @@
 <template>
     <div class="main">
-        <l-header ref="lHeader"></l-header>
-        <l-layout @count-change="$refs.lHeader.getCount()"></l-layout>
+        <l-header ref="lHeader" @to-batch="$refs.lLayout.initData()"></l-header>
+        <l-layout @count-change="$refs.lHeader.getCount()" ref="lLayout"></l-layout>
     </div>
 </template>
 
@@ -21,4 +21,6 @@
     .main
         width 100%
         height 100%
+        min-width 1000px
+        min-height 500px
 </style>

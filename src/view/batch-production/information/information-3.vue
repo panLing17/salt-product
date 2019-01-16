@@ -19,7 +19,7 @@
                 <td class="td">{{item.amount}}</td>
                 <td class="td">{{item.place}}</td>
                 <td class="td">{{item.feedUser}}</td>
-                <td class="td">{{item.feedTime}}</td>
+                <td class="td" style="overflow: hidden">{{item.feedTime}}</td>
             </tr>
         </table>
     </div>
@@ -66,7 +66,9 @@
 
 <style scoped lang="stylus">
     .table
+        table-layout auto
         .tr
             .td
-                height 2.6em
+                padding .5em
+                white-space normal
 </style>

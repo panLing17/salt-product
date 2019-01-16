@@ -14,7 +14,7 @@
                 <div class="mask-content fs_20">
                     <div class="block">
                         <label>辅料名称</label>
-                        <el-select v-model="materials" filterable   placeholder="" style="width: 50%">
+                        <el-select v-model="materials" filterable clearable   placeholder="" style="width: 50%">
                             <el-option
                                     v-for="item in materialsData"
                                     :key="item.pkId"
@@ -49,7 +49,7 @@
                     </table>
                     <div class="block">
                         <label>辅料企业</label>
-                        <el-select v-model="company" filterable   placeholder="" style="width: 50%">
+                        <el-select v-model="company" filterable clearable   placeholder="" style="width: 50%">
                             <el-option
                                     v-for="item in companyData"
                                     :key="item.pkId"
@@ -102,10 +102,10 @@
                         </tr>
                         <tr>
                             <td>
-                                <input type="text" v-model="params.reqParam.prodPlace">
+                                <input type="text" v-model="params.reqParam.batchNo">
                             </td>
                             <td>
-                                <input type="text" v-model="params.reqParam.batchNo">
+                                <input type="text" v-model="params.reqParam.prodPlace">
                             </td>
                             <td>
                                 <el-date-picker
@@ -131,6 +131,7 @@
                                 :limit="1"
                                 :on-exceed="uploadExceed"
                                 :http-request="uploadImg1"
+                                :before-upload="beforeAvatarUpload"
                         >
                             <i class="el-icon-plus"></i>
                         </el-upload>
@@ -149,6 +150,7 @@
                                 :limit="1"
                                 :on-exceed="uploadExceed"
                                 :http-request="uploadImg2"
+                                :before-upload="beforeAvatarUpload"
                         >
                             <i class="el-icon-plus"></i>
                         </el-upload>
@@ -248,22 +250,46 @@
         })
       },
       uploadImg1(file) {
+        let _this = this
         if (file) {
-          this.fileReader.readAsDataURL(file.file)
-          this.fileReader.onload = () => {
-            this.params.reqParam.factoryInspReport = this.fileReader.result
-            console.log(this.params.reqParam.factoryInspReport)
+          if(file.file.size/1024 > 1025) { //大于1M，进行压缩上传
+            this.$method.photoCompress(file.file, {
+              quality: 0.5
+            }, function(base64Codes){
+              _this.params.reqParam.factoryInspReport = base64Codes
+            })
+          }else{ //小于等于1M 原图上传
+            this.fileReader.readAsDataURL(file.file)
+            this.fileReader.onload = () => {
+              this.params.reqParam.factoryInspReport = this.fileReader.result
+            }
           }
         }
+      },
+      beforeAvatarUpload(file) {
+        const isLt2M = file.size / 1024 / 1024 < 5;
+        if (!isLt2M) {
+          this.$message.error('上传头像图片大小不能超过 5MB!');
+        }
+        return isLt2M;
       },
       handleRemove1() {
         this.params.reqParam.factoryInspReport = ''
       },
       uploadImg2(file) {
+        let _this = this
         if (file) {
-          this.fileReader.readAsDataURL(file.file)
-          this.fileReader.onload = () => {
-            this.params.reqParam.accepetInspReport = this.fileReader.result
+          if(file.file.size/1024 > 1025) { //大于1M，进行压缩上传
+            this.$method.photoCompress(file.file, {
+              quality: 0.5
+            }, function(base64Codes){
+              _this.params.reqParam.accepetInspReport = base64Codes
+            })
+          }else{ //小于等于1M 原图上传
+            this.fileReader.readAsDataURL(file.file)
+            this.fileReader.onload = () => {
+              this.params.reqParam.accepetInspReport = this.fileReader.result
+            }
           }
         }
       },
@@ -280,8 +306,15 @@
         if(typeof t !== 'string') {
           this.params.reqParam.prodDate = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate()
         }
-        if(this.$method.isNullFn(this.params.reqParam)) {
-          this.$message.warning('数据不能为空')
+        if(!this.$method.check(this.params.reqParam, {
+          prodDate: '生产日期',
+          factoryPkId: '企业编码',
+          rawPkId: '原料编码',
+          prodPlace: '生产地',
+          batchNo: '原料出厂批号',
+          factoryInspReport: '出厂检验报告',
+          accepetInspReport: '验收检验报告'
+        })) {
           return
         }
         this.$http({

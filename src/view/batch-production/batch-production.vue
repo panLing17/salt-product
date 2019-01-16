@@ -1,7 +1,7 @@
 <template>
     <div class="batch-production">
         <div class="top-card white-bg">
-            <div class="top-title view-title">查询</div>
+            <!--<div class="top-title view-title">查询</div>-->
             <div class="search-wrap">
                 <label class="label-1">产品名称</label>
                 <el-select v-model="params.reqParam.productCode" filterable  clearable placeholder="">
@@ -14,16 +14,16 @@
                 </el-select>
                 <label class="label-2">生产批号</label>
                 <input type="text" v-model="params.reqParam.batch">
-                <l-button :style="{'margin': '0 1em 0 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="getData"></l-button>
-                <l-button buttonText="清空" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
+                <l-button v-if="btnPromise.search" :style="{'margin': '11px 1em 11px 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="search"></l-button>
+                <l-button buttonText="清空" :style="{'margin': '11px 0'}" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
             </div>
         </div>
         <div class="bottom-card white-bg">
             <div class="view-title">批次生产任务列表</div>
             <div class="table-button-wrap">
-                <table-button class="fs_18" :data="tableButtonArr1" @item-click="tableItemClick1"></table-button>
-                <table-button class="fs_18" style="margin-left: 2.777em" :data="tableButtonArr2" @item-click="tableItemClick2"></table-button>
-                <div class="table-button-single fs_18" @click="addShow">
+                <table-button v-if="btnPromise.search" class="fs_18" :data="tableButtonArr1" @item-click="tableItemClick1"></table-button>
+                <table-button v-if="btnPromise.search" class="fs_18" style="margin-left: 2.777em" :data="tableButtonArr2" @item-click="tableItemClick2"></table-button>
+                <div v-if="btnPromise.addBatch" class="table-button-single fs_18" @click="addShow">
                     <i class="iconfont icon-xinz fs_16"></i>
                     <span>新增批次任务</span>
                 </div>
@@ -86,26 +86,23 @@
                                 >{{item.inspectBillCode?'已检':'未检'}}</span>
                             </td>
                             <td class="td btn-wrap">
-                                <div class="btn" @click="getDetail(item, 0)">
+                                <div v-if="btnPromise.detail" class="btn" @click="getDetail(item, 0)">
                                     <i class="fs_18 iconfont icon-xiangq"></i>
                                     <span class="fs_18">详情</span>
                                 </div>
-                                <div class="btn" @click.stop="openPop(index)">
-                                    <i class="fs_18 iconfont icon-guanli"></i>
-                                    <span class="fs_18">管理</span>
-                                    <i class="fs_16 iconfont icon-jiant-x" style="margin-left: .2em"></i>
-                                    <div class="pop-btn fs_20" v-show="item.btnPopShow">
-                                        <div class="sanjiao"></div>
-                                        <ul class="pop-list">
-                                            <li class="pop-item" v-if="item.status===94011 || item.status===94012" @click="getDetail(item, 2)">修改</li>
-                                            <li class="pop-item" @click="del(index)">删除</li>
-                                            <li class="pop-item" @click="examine(item)" v-if="item.status===94011">审核</li>
-                                            <li class="pop-item" v-if="item.status===94012" @click="getDetail(item, 1, 0)">结批</li>
-                                            <li class="pop-item" @click="getDetail(item, 1, 1)">结批报告</li>
-                                            <li class="pop-item" v-if="item.status===94014" @click="getDetail(item, 3)">放行</li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                <el-dropdown trigger="click"  @command="handleChange">
+                                  <span class="el-dropdown-link">
+                                    <i class="iconfont icon-guanli"></i>管理<i class="fs_16 iconfont icon-jiant-x"></i>
+                                  </span>
+                                    <el-dropdown-menu slot="dropdown">
+                                        <el-dropdown-item :command="{flag:0,index}" v-if="btnPromise.delBatch">删除</el-dropdown-item>
+                                        <el-dropdown-item :command="{flag:1,item}" v-if="item.status===94012 && btnPromise.knot">结批</el-dropdown-item>
+                                        <el-dropdown-item :command="{flag:2,item}" v-if="(item.status===94011 || item.status===94012) && btnPromise.editorBatch">修改</el-dropdown-item>
+                                        <el-dropdown-item :command="{flag:3,item}" v-if="item.status===94014 && btnPromise.pass">放行</el-dropdown-item>
+                                        <el-dropdown-item :command="{flag:4,item}" v-if="item.status===94011 && btnPromise.examineBatch">审核</el-dropdown-item>
+                                        <el-dropdown-item :command="{flag:6,item}" v-if="(item.status===94014 || item.status===94015 || item.status===94016) && btnPromise.knotReport">结批报告</el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </el-dropdown>
                             </td>
                         </tr>
                     </table>
@@ -115,6 +112,7 @@
                     :totalPage="data.total"
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
+                    :currentPage="params.reqParam.page"
             ></l-page>
         </div>
         <el-dialog
@@ -132,9 +130,9 @@
         <detail ref="detail"></detail>
         <pass ref="pass" :detailData="detailData"></pass>
         <random-check ref="randomCheck" :data="currentDetail"></random-check>
-        <random-check-detail ref="randomCheckDetail" :data="currentDetail"></random-check-detail>
+        <random-check-detail :btnPromise="btnPromise" ref="randomCheckDetail" :data="currentDetail"></random-check-detail>
         <check ref="check" :data="currentDetail"></check>
-        <check-detail ref="checkDetail" :data="currentDetail"></check-detail>
+        <check-detail :btnPromise="btnPromise" ref="checkDetail" :data="currentDetail"></check-detail>
     </div>
 </template>
 
@@ -184,9 +182,8 @@
       }
     },
     created () {
-      this.getProductList()
-      this.getData()
       this.initData()
+      this.getProductList()
     },
     methods: {
       getProductList() {
@@ -205,6 +202,9 @@
         })
       },
       initData () {
+        if(typeof this.$route.query.page !== 'undefined') {
+          this.params.reqParam.page = this.$route.query.page
+        }
         this.tableButtonArr1 = this.tableButtonArr1.concat(this.GLOBAL.dictionaryData[940])
         this.tableButtonArr2 = this.tableButtonArr2.concat(this.GLOBAL.dictionaryData[100])
       },
@@ -239,44 +239,54 @@
       },
       sampling(item) {
         if(!item.samplingBillCode) {
-          this.currentDetail = item
-          this.$refs.randomCheck.show()
+          if(this.btnPromise.addRandom) {
+            this.currentDetail = item
+            this.$refs.randomCheck.show()
+          }
         } else {
-          this.$http({
-            url: this.$api + 'produce/production/pd/batch/sampling/getByIdOrBatchPkId',
-            method: 'post',
-            data: {
-              reqParam: {
-                batchPkId: item.pkId
+          if(this.btnPromise.showRandom) {
+            this.$http({
+              url: this.$api + 'produce/production/pd/batch/sampling/getByIdOrBatchPkId',
+              method: 'post',
+              data: {
+                reqParam: {
+                  batchPkId: item.pkId
+                }
               }
-            }
-          }).then(res => {
-            if(res.data.retCode === 1) {
-              this.currentDetail = res.data.retVal
-              this.$refs.randomCheckDetail.show()
-            }
-          })
+            }).then(res => {
+              if(res.data.retCode === 1) {
+                res.data.retVal.status = item.status
+                this.currentDetail = res.data.retVal
+                this.$refs.randomCheckDetail.show()
+              }
+            })
+          }
         }
       },
       inspect(item) {
         if(!item.inspectBillCode) {
-          this.currentDetail = item
-          this.$refs.check.show()
+          if(this.btnPromise.addCheck) {
+            this.currentDetail = item
+            this.$refs.check.show()
+          }
         } else {
-          this.$http({
-            url: this.$api + 'produce/production/pd/batch/inspect/getByIdOrBatchPkId',
-            method: 'post',
-            data: {
-              reqParam: {
-                batchPkId: item.pkId
+          if(this.btnPromise.showCheck) {
+            this.$http({
+              url: this.$api + 'produce/production/pd/batch/inspect/getByIdOrBatchPkId',
+              method: 'post',
+              data: {
+                reqParam: {
+                  batchPkId: item.pkId
+                }
               }
-            }
-          }).then(res => {
-            if(res.data.retCode === 1) {
-              this.currentDetail = res.data.retVal
-              this.$refs.checkDetail.show()
-            }
-          })
+            }).then(res => {
+              if(res.data.retCode === 1) {
+                res.data.retVal.status = item.status
+                this.currentDetail = res.data.retVal
+                this.$refs.checkDetail.show()
+              }
+            })
+          }
         }
       },
       addShowFn() {
@@ -326,7 +336,7 @@
             this.detailData = res.data.retVal
             if(flag ===0) {
               sessionStorage.setItem('currentDetail', JSON.stringify(this.detailData))
-              this.$router.push('/information')
+              this.$router.push({path: '/information', query: {page: this.params.reqParam.page}})
             } else if(flag === 1) {
               this.knotBatchStatus = status
                 this.$refs.knotBatch.show()
@@ -368,6 +378,21 @@
             this.$message('审核完成')
           }
         })
+      },
+      handleChange(data) {
+        if(data.flag === 0) {
+          this.del(data.index)
+        } else if(data.flag===1){
+          this.getDetail(data.item, 1, 0)
+        } else if(data.flag===2){
+          this.getDetail(data.item, 2)
+        } else if(data.flag===3){
+          this.getDetail(data.item, 3)
+        } else if(data.flag===4){
+          this.examine(data.item)
+        } else {
+          this.getDetail(data.item, 1, 1)
+        }
       }
     },
     components: {
@@ -402,9 +427,9 @@
                 transform translateY(-50%)
         .table-wrap
             width 94.38%
-            height 70%
+            /*height 70%*/
             margin 1% auto 0
-            overflow auto
+            /*overflow auto*/
             box-sizing border-box
             .table-scroll
                 height calc(100% - 2.5em)

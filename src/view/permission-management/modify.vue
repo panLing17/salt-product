@@ -31,7 +31,7 @@
                                 <input type="text" v-model="data.gName">
                             </td>
                             <td>
-                                <el-select class="fs_20" filterable v-model="data.edited" placeholder="">
+                                <el-select class="fs_20" filterable clearable v-model="data.edited" placeholder="">
                                     <el-option
                                             v-for="item in editedData"
                                             :key="item.pkId"
@@ -74,7 +74,7 @@
                                 </li>
                             </ul>
                             <div v-for="(father, fi) in grandfather.child" :key="fi">
-                                <ul class="button-content">
+                                <ul class="button-content" style="padding-left: 20px">
                                     <li class="text fs_20"
                                         v-show="father.show"
                                         v-for="(children, ci) in father.child"
@@ -83,11 +83,28 @@
                                     >
                                         <i class="iconfont fs_16"
                                            :class="{'icon-dianxuan-1': !children.selected, 'icon-dianxuan-': children.selected}"
-                                           :style="{color: children.selected?'#5F7FD9':'#414141'}"
+                                           :style="{color: children.show || (father.pkId!==11500)?'#5F7FD9':'#414141'}"
                                         ></i>
-                                        <span>{{children.sName}}</span>
+                                        <span
+                                                :style="{color: children.show || (father.pkId!==11500)?'#5F7FD9':'#414141'}"
+                                        >{{children.sName}}</span>
                                     </li>
                                 </ul>
+                                <div v-for="(children, ci) in father.child" v-if="father.pkId===11500">
+                                    <ul class="button-content" style="padding-left: 40px">
+                                        <li class="text fs_20"
+                                            v-for="(li, liIndex) in children.child"
+                                            v-show="children.show && father.show"
+                                            @click="liClick(index, fi, ci, liIndex, li)"
+                                        >
+                                            <i class="iconfont fs_16"
+                                               :class="{'icon-dianxuan-1': !li.selected, 'icon-dianxuan-': li.selected}"
+                                               :style="{color: li.selected?'#5F7FD9':'#414141'}"
+                                            ></i>
+                                            <span>{{li.sName}}</span>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </el-collapse-item>
                     </el-collapse>
@@ -143,11 +160,13 @@
         }).then(res => {
           if (res.data.retCode === 1) {
             let arr = []
+            let t = []
             let re = res.data.retVal
             re.forEach(r => {
               this.data.resources.forEach(da => {
                 if (r.pkId === da.pkId) {
                   r.selected = true
+                  t.push(r.pkId)
                 }
               })
             })
@@ -165,32 +184,32 @@
                 }
               })
             })
-            let t = []
-            arr.forEach((grandfather, gi) => {
-              grandfather.child.forEach((father, index) => {
-                father.show = index === 0?true:false
+            arr.forEach((grandfather, ai) => {
+              grandfather.child.forEach((father, bi) => {
+                father.show = bi === 0?true:false
                 re.forEach(children => {
                   if (children.pid === father.pkId) {
+                    if(father.pkId !== 11500) {
+                    } else {
+                      children.child = []
+                    }
                     father.child.push(children)
                   }
-                  if (children.selected) {
-                    t.push({gi, index})
-                  }
+
                 })
               })
             })
-            t.forEach(item=>{
-              let count = 0
-              arr[item.gi].child[item.index].child.forEach(c => {
-                if (c.selected) {
-                  count++
-                }
+            arr.forEach((a, ai)=>{
+              a.child.forEach((b, bi)=>{
+                b.child.forEach((c, ci)=>{
+                  c.show = ci === 0? true: false
+                  re.forEach(d=>{
+                    if(d.pid === c.pkId) {
+                      c.child.push(d)
+                    }
+                  })
+                })
               })
-              if (arr[item.gi].child[item.index].child.length === count) {
-                arr[item.gi].child[item.index].selected = true
-              } else {
-                arr[item.gi].child[item.index].selected = false
-              }
             })
 
             arr.forEach((item, index) => {
@@ -205,6 +224,14 @@
         this.promiseData[fi].child[oi].child.forEach(item => {
           item.selected = this.promiseData[fi].child[oi].selected
         })
+        if(this.promiseData[fi].child[oi].pkId === 11500) {
+          this.promiseData[fi].child[oi].child.forEach(item => {
+            item.selected = this.promiseData[fi].child[oi].selected
+            item.child.forEach(c=>{
+              c.selected = this.promiseData[fi].child[oi].selected
+            })
+          })
+        }
         this.$forceUpdate()
       },
       showClick(fi, oi) {
@@ -230,31 +257,70 @@
         } else {
           this.promiseData[gi].child[fi].selected = false
         }
+        if(this.promiseData[gi].child[fi].pkId === 11500) {
+          this.promiseData[gi].child[fi].child.forEach((a, i)=>{
+            if(i===ci) {
+              a.show = true
+            } else {
+              a.show = false
+            }
+          })
+          this.promiseData[gi].child[fi].child[ci].child.forEach(c=>{
+            c.selected = this.promiseData[gi].child[fi].child[ci].selected
+          })
+        }
         this.$forceUpdate()
       },
       right() {
         let resoures = []
         let s = new Set()
         let s2 = new Set()
+        let s3 = new Set()
         this.promiseData.forEach((g, g_i) => {
           g.child.forEach((f, f_i) => {
+            if(f.pkId===80500 && f.selected) {
+              resoures.push({
+                pkId: f.pkId
+              })
+              resoures.push({
+                pkId: g.pkId
+              })
+            }
             f.child.forEach((c, c_i) => {
-              if (c.selected) {
-                resoures.push({
-                  pkId: c.pkId
+              if(f.pkId===11500) {
+                c.child.forEach(d => {
+                  if(d.selected) {
+                    resoures.push({
+                      pkId: d.pkId
+                    })
+                    s.add(g.pkId)
+                    s2.add(f.pkId)
+                    s3.add(c.pkId)
+                  }
                 })
-                s.add(g_i)
-                s2.add(f.pkId)
+              } else {
+                if (c.selected) {
+                  resoures.push({
+                    pkId: c.pkId
+                  })
+                  s.add(g.pkId)
+                  s2.add(f.pkId)
+                }
               }
             })
           })
         })
         for (let i of s) {
           resoures.push({
-            pkId: this.promiseData[i].pkId
+            pkId: i
           })
         }
         for (let i of s2) {
+          resoures.push({
+            pkId: i
+          })
+        }
+        for (let i of s3) {
           resoures.push({
             pkId: i
           })
@@ -275,6 +341,43 @@
             this.$message.success('修改成功')
           }
         })
+      },
+      liClick(gi, fi, ci, li, item) {
+        item.selected = !item.selected
+        let count = 0
+        this.promiseData[gi].child[fi].child[ci].child.forEach(item=>{
+          if(item.selected) {
+            count++
+          }
+        })
+        if(count === this.promiseData[gi].child[fi].child[ci].child.length) {
+          this.promiseData[gi].child[fi].child[ci].selected = true
+        } else {
+          this.promiseData[gi].child[fi].child[ci].selected = false
+        }
+        count = 0
+        this.promiseData[gi].child[fi].child.forEach(item => {
+          if(item.selected) {
+            count++
+          }
+        })
+        if(count === this.promiseData[gi].child[fi].child.length) {
+          this.promiseData[gi].child[fi].selected = true
+        } else {
+          this.promiseData[gi].child[fi].selected = false
+        }
+        count = 0
+        this.promiseData[gi].child.forEach(item=>{
+          if(item.selected) {
+            count++
+          }
+        })
+        if(count === this.promiseData[gi].child.length) {
+          this.promiseData[gi].selected = true
+        } else {
+          this.promiseData[gi].selected = false
+        }
+        this.$forceUpdate()
       }
     }
   }

@@ -28,6 +28,7 @@ export default {
 </script>
 
 <style scoped lang="stylus">
+    @import '../../assets/css/fn.styl'
     .l-button
         padding 0 1em
         height 28px
@@ -41,6 +42,7 @@ export default {
         user-select none
         line-height 1
         font-weight normal
+        font-size-set(16px)
         span
             margin-left .2em
 </style>

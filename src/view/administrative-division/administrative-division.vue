@@ -1,14 +1,14 @@
 <template>
     <div class="administrative-division">
         <div class="top-card white-bg">
-            <div class="top-title view-title">查询</div>
+            <!--<div class="top-title view-title">查询</div>-->
             <div class="search-wrap fs_20">
                 <label class="label-1">地区名称</label>
                 <input type="text" v-model="params.reqParam.areaName">
                 <label class="label-2">地区编码</label>
                 <input type="text" v-model="params.reqParam.areaId">
-                <l-button :style="{'margin': '0 1em 0 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="getData"></l-button>
-                <l-button buttonText="清空" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
+                <l-button v-if="btnPromise.search" :style="{'margin': '11px 1em 11px 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="search"></l-button>
+                <l-button buttonText="清空" :style="{'margin': '11px 0'}" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
             </div>
         </div>
         <div class="bottom-card white-bg">
@@ -43,13 +43,41 @@
                     <colgroup width="14%"></colgroup>
                     <colgroup width="20%"></colgroup>
                     <tr class="tr" v-for="(item, index) in data.dataList" :key="index">
-                        <td class="td">{{item.provId}}</td>
-                        <td class="td">{{item.provName}}</td>
-                        <td class="td">{{item.cityId}}</td>
-                        <td class="td">{{item.cityName}}</td>
-                        <td class="td">{{item.areaId}}</td>
-                        <td class="td">{{item.areaName}}</td>
-                        <td class="td">{{item.fullName}}</td>
+                        <td class="td">
+                            <el-tooltip :open-delay="300" :content="item.provId" placement="top">
+                                <span style="cursor: pointer">{{item.provId}}</span>
+                            </el-tooltip>
+                        </td>
+                        <td class="td">
+                            <el-tooltip :open-delay="300" :content="item.provName" placement="top">
+                                <span style="cursor: pointer">{{item.provName}}</span>
+                            </el-tooltip>
+                        </td>
+                        <td class="td">
+                            <el-tooltip :open-delay="300" :content="item.cityId" placement="top">
+                                <span style="cursor: pointer">{{item.cityId}}</span>
+                            </el-tooltip>
+                        </td>
+                        <td class="td">
+                            <el-tooltip :open-delay="300" :content="item.cityName" placement="top">
+                                <span style="cursor: pointer">{{item.cityName}}</span>
+                            </el-tooltip>
+                        </td>
+                        <td class="td">
+                            <el-tooltip :open-delay="300" :content="item.areaId" placement="top">
+                                <span style="cursor: pointer">{{item.areaId}}</span>
+                            </el-tooltip>
+                        </td>
+                        <td class="td">
+                            <el-tooltip :open-delay="300" :content="item.areaName" placement="top">
+                                <span style="cursor: pointer">{{item.areaName}}</span>
+                            </el-tooltip>
+                        </td>
+                        <td class="td">
+                            <el-tooltip :open-delay="300" :content="item.fullName" placement="top">
+                                <span style="cursor: pointer">{{item.fullName}}</span>
+                            </el-tooltip>
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -57,6 +85,7 @@
                     :totalPage="data.total"
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
+                    :currentPage="params.reqParam.page"
             ></l-page>
         </div>
     </div>
@@ -79,9 +108,6 @@
         },
         data: {}
       }
-    },
-    created () {
-      this.getData()
     },
     methods: {
       getData () {
@@ -107,6 +133,7 @@
     .administrative-division
         width 100%
         height 100%
+        overflow auto
         .search-wrap
             .label-1
                 margin 0 0.5em 0 2.85em
@@ -116,8 +143,8 @@
                 margin 0 0.5em 0 1em
         .table-wrap
             width 94%
-            height 70%
-            overflow auto
+            /*height 70%*/
+            /*overflow auto*/
             margin 0 auto
             .table
                 .td

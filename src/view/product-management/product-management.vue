@@ -1,28 +1,29 @@
 <template>
     <div class="product-management">
         <div class="top-card white-bg">
-            <div class="top-title view-title">查询</div>
+            <!--<div class="top-title view-title">查询</div>-->
             <div class="search-wrap">
                 <label class="fs_20">产品名称</label>
                 <input class="fs_20" type="text" v-model="params.reqParam.productName" />
-                <l-button :style="{'margin': '0 1em 0 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="search"></l-button>
-                <l-button buttonText="清空" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
+                <l-button v-if="btnPromise.search" :style="{'margin': '11px 1em 11px 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="search"></l-button>
+                <l-button buttonText="清空" :style="{'margin': '11px 0'}" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
             </div>
         </div>
         <div class="bottom-card white-bg">
-            <div class="view-title">产品管理列表</div>
+            <div class="view-title">统筹产品列表</div>
             <div class="table-button-wrap">
-                <table-button class="fs_18" :data="tableButtonArr1" @item-click="tableItemClick1"></table-button>
-                <table-button class="fs_18" style="margin-left: 2.777em" :data="tableButtonArr2" @item-click="tableItemClick2"></table-button>
-                <div class="table-button-single fs_18" style="margin-left: 50%" @click="synData">同步产品管理</div>
+                <table-button v-if="btnPromise.search" class="fs_18" :data="tableButtonArr1" @item-click="tableItemClick1"></table-button>
+                <table-button v-if="btnPromise.search" class="fs_18" style="margin-left: 2.777em" :data="tableButtonArr2" @item-click="tableItemClick2"></table-button>
+                <div v-if="btnPromise.sync" class="table-button-single fs_18" style="margin-left: 50%" @click="synData">同步产品管理</div>
             </div>
             <div class="table-wrap">
                 <table class="fs_20 table-header">
                     <colgroup width="20%"></colgroup>
                     <colgroup width="20%"></colgroup>
-                    <colgroup width="20%"></colgroup>
+                    <colgroup width="15%"></colgroup>
+                    <colgroup width="10%"></colgroup>
                     <colgroup width="12%"></colgroup>
-                    <colgroup width="12%"></colgroup>
+                    <colgroup width="7%"></colgroup>
                     <colgroup width="16%"></colgroup>
                     <tr class="tr">
                         <th class="th">产品编码</th>
@@ -30,6 +31,7 @@
                         <th class="th">品规</th>
                         <th class="th">每箱含量</th>
                         <th class="th">每托含量</th>
+                        <th class="th">允许生产</th>
                         <th class="th">操作</th>
                     </tr>
                 </table>
@@ -37,46 +39,52 @@
                     <table class="table fs_20">
                         <colgroup width="20%"></colgroup>
                         <colgroup width="20%"></colgroup>
-                        <colgroup width="20%"></colgroup>
+                        <colgroup width="15%"></colgroup>
+                        <colgroup width="10%"></colgroup>
                         <colgroup width="12%"></colgroup>
-                        <colgroup width="12%"></colgroup>
+                        <colgroup width="7%"></colgroup>
                         <colgroup width="16%"></colgroup>
                         <tr class="tr" v-for="(item, index) in data.dataList" :key="index">
-                            <td class="td">{{item.productCode}}</td>
-                            <td class="td">{{item.productName}}</td>
-                            <td class="td">{{item.spec}}</td>
-                            <td class="td">{{item.boxRatio}}袋</td>
-                            <td class="td">{{item.tpRatio}}箱</td>
+                            <td class="td">
+                                <el-tooltip :open-delay="300" :content="item.productCode" placement="top">
+                                    <span style="cursor: pointer">{{item.productCode}}</span>
+                                </el-tooltip>
+                            </td>
+                            <td class="td">
+                                <el-tooltip :open-delay="300" :content="item.productName" placement="top">
+                                    <span style="cursor: pointer">{{item.productName}}</span>
+                                </el-tooltip>
+                            </td>
+                            <td class="td">
+                                <el-tooltip :open-delay="300" :content="item.spec" placement="top">
+                                    <span style="cursor: pointer">{{item.spec}}</span>
+                                </el-tooltip>
+                            </td>
+                            <td class="td">
+                                <el-tooltip :open-delay="300" :content="item.boxRatio + '袋'" placement="top">
+                                    <span style="cursor: pointer">{{item.boxRatio}}</span>
+                                </el-tooltip>
+                            </td>
+                            <td class="td">
+                                <el-tooltip :open-delay="300" :content="item.tpRatio + '箱'" placement="top">
+                                    <span style="cursor: pointer">{{item.tpRatio}}箱</span>
+                                </el-tooltip>
+                            </td>
+                            <td class="td">{{item.prodStatus}}</td>
                             <td class="td btn-wrap">
                                 <div class="btn" @click="getDetail(item,0)">
                                     <i class="fs_18 iconfont icon-xiangq"></i>
                                     <span class="fs_18">详情</span>
                                 </div>
-                                <div class="btn" @click.stop="openPop(index, $event)">
-                                    <i class="fs_18 iconfont icon-guanli"></i>
-                                    <span class="fs_18">管理</span>
-                                    <i class="fs_16 iconfont icon-jiant-x" style="margin-left: .2em"></i>
-                                    <div class="pop-btn fs_20" v-show="item.btnPopShow">
-                                        <div class="sanjiao"></div>
-                                        <ul class="pop-list">
-                                            <li class="pop-item" @click="del(index)">删除</li>
-                                            <li class="pop-item" @click="getDetail(item, 1)">设置每托含量</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <!--<el-popover-->
-                                        <!--placement="top"-->
-                                        <!--width="160"-->
-                                        <!--v-model="item.btnPopShow">-->
-                                    <!--<ul class="pop-list">-->
-                                        <!--<li class="pop-item" @click="del(index)">删除</li>-->
-                                        <!--<li class="pop-item" @click="getDetail(item, 1)">设置每托含量</li>-->
-                                    <!--</ul>-->
-                                    <!--<el-button class="btn" slot="reference">-->
-                                        <!--<i class="fs_18 iconfont icon-xiangq"></i>-->
-                                        <!--<span class="fs_18">详情</span>-->
-                                    <!--</el-button>-->
-                                <!--</el-popover>-->
+                                <el-dropdown trigger="click"  @command="handleChange">
+                                  <span class="el-dropdown-link">
+                                    <i class="iconfont icon-guanli"></i>管理<i class="fs_16 iconfont icon-jiant-x"></i>
+                                  </span>
+                                    <el-dropdown-menu slot="dropdown">
+                                        <el-dropdown-item :command="{flag:0,index}" v-if="btnPromise.del">删除</el-dropdown-item>
+                                        <el-dropdown-item :command="{flag:1,item}" v-if="btnPromise.set">设置每托含量</el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </el-dropdown>
                             </td>
                         </tr>
                     </table>
@@ -86,6 +94,7 @@
                     :totalPage="data.total"
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
+                    :currentPage="params.reqParam.page"
             ></l-page>
         </div>
         <transition name="fade">
@@ -108,7 +117,9 @@
                     <div class="mask-content" v-show="tabItemActive===0">
                         <div>
                         <div class="imgs-wrap">
-                            <img v-for="item in detailData.imgs" :key="item" :src="item.img" />
+                            <div class="img" v-for="item in detailData.imgs" :key="item">
+                                <img :src="item.img" @click="$method.magnifier(item.img)" />
+                            </div>
                         </div>
                         <table class="mask-table fs_20" style="margin-top: 1em">
                             <colgroup width="12%"></colgroup>
@@ -228,7 +239,7 @@
                     <div class="mask-title-wrap">
                         <div class="mask-title fs_22">
                             设置每托含量
-                            <div class="close" @click="maskShow=false">
+                            <div class="close" @click="maskShow=false, productCodeSet=''">
                                 <i class="iconfont icon-guanbi"></i>
                             </div>
                         </div>
@@ -267,8 +278,8 @@
                                 <colgroup width="80%"></colgroup>
                                 <tr>
                                     <td>设置每托含量</td>
-                                    <td>
-                                        <input type="text" v-model="productCodeSet">
+                                    <td style="padding-left: 0">
+                                        <input type="text" autofocus v-model="productCodeSet">
                                     </td>
                                 </tr>
                             </table>
@@ -328,7 +339,6 @@ export default {
     }
   },
   created () {
-    this.getData()
     this.initData()
   },
   methods: {
@@ -345,14 +355,12 @@ export default {
         if (res.data.retCode === 1) {
           res.data.retVal.dataList.forEach(item => {
             item.btnPopShow = false
+            item.prodStatus = this.$method.queryDictionary.call(this, 400, item.prodStatus)
           }
           )
           this.data = res.data.retVal
         }
       })
-    },
-    search () {
-      this.getData()
     },
     clear () {
       this.params.reqParam.productName = ''
@@ -402,7 +410,7 @@ export default {
     },
     synData () {
       this.$http({
-        url: this.$api + '/produce/personal/getClientId',
+        url: this.$api + 'produce/personal/getClientId',
         method: 'post',
         data: {}
       }).then((res) => {
@@ -422,6 +430,7 @@ export default {
         data: {}
       }).then(res => {
         if(res.data.retCode === 1) {
+          this.$message.success('同步成功')
           this.getData()
         }
       })
@@ -437,7 +446,11 @@ export default {
             item.iodate = this.$method.queryDictionary.call(this, 100, item.iodate)
             item.packStyle = this.$method.queryDictionary.call(this, 920, item.packStyle)
             item.packType = this.$method.queryDictionary.call(this, 930, item.packType)
-            item.selected = false
+            if(item.prodStatus===40021) {
+              item.selected = true
+            } else {
+              item.selected = false
+            }
           })
           this.syncSelectData = res.data.retVal
           this.$refs.syncSelect.show()
@@ -445,6 +458,7 @@ export default {
       })
     },
     hideMask () {
+      this.tabItemActive = 0
       this.detailShow = false
     },
     del (index) {
@@ -502,6 +516,13 @@ export default {
           this.getData()
         }
       })
+    },
+    handleChange(data) {
+      if(data.flag === 0) {
+        this.del(data.index)
+      } else {
+        this.getDetail(data.item, 1)
+      }
     }
   },
   components: {
@@ -525,14 +546,10 @@ export default {
                 line-height 1.9em
         .table-wrap
             width 94.38%
-            height 70%
+            /*height 70%*/
             margin 1% auto 0
-            overflow auto
+            /*overflow auto*/
             box-sizing border-box
-            .table-scroll
-                height calc(100% - 2.5em)
-                box-sizing border-box
-                position relative
         .mask-content-wrap
             width 74.8%
             .tab-wrap
@@ -579,7 +596,7 @@ export default {
                 margin 0 auto
                 overflow auto
                 position relative
-                .imgs-wrap
+                /*.imgs-wrap
                     font-size 0
                     display flex
                     justify-content space-between
@@ -587,18 +604,41 @@ export default {
                     img
                         width 24%
                         border 1px solid #707070
+                        border-radius 4px*/
+                .imgs-wrap
+                    font-size 0
+                    .img
+                        display inline-block
+                        vertical-align top
+                        margin-right 1%
+                        width 24%
+                        border 1px solid #707070
                         border-radius 4px
+                        height 0
+                        padding-bottom 24%
+                        position relative
+                        overflow hidden
+                        &:last-child
+                            margin-right 0
+                    img
+                        position absolute
+                        left 0
+                        top 0
+                        width 100%
+                        height 100%
                 .left
                     float left
                     font-size 0
                     width 27%
                     height 0
-                    padding-bottom 20%
+                    padding-bottom 27%
                     background-color #1b6d85
                     overflow hidden
                     border 1px solid #707070
+                    position relative
                     img
                         width 100%
+                        max-height 100%
                         position absolute
                         top 0
                         left 0
@@ -606,18 +646,18 @@ export default {
                     float right
                     width 70%
                     .special
-                        width 70%
-                        position absolute
-                        right 0
-                        bottom 0
+                        width 100%
+                        margin-top 20px
                         input
                             border none
                             width 100%
                             height 100%
             .mask-table
                 width 100%
+                table-layout auto
                 td
                     height 2.5em
+                    white-space normal
             .mask-btn-wrap
                 width 93%
                 margin 0 auto

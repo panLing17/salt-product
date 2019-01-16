@@ -1,9 +1,15 @@
 <template>
     <div class="information-1 clear-float">
         <div class="img">
-            <img :src="data.imgs[0]?data.imgs[0].img:''" @error="$method.imgError($event)" alt="">
+            <img :src="data.imgs[0]?data.imgs[0].img:''" @click="$method.magnifier(data.imgs[0]?data.imgs[0].img:'')" @error="$method.imgError($event)" alt="">
         </div>
         <table class="table fs_20">
+            <colgroup width="12%"></colgroup>
+            <colgroup width="21%"></colgroup>
+            <colgroup width="12%"></colgroup>
+            <colgroup width="21%"></colgroup>
+            <colgroup width="12%"></colgroup>
+            <colgroup width="22%"></colgroup>
             <tr class="tr">
                 <td class="td">产品名称</td>
                 <td class="td">{{data.productName}}</td>
@@ -122,6 +128,8 @@
         .table
             float right
             width 75%
+            table-layout auto
             .td
-                height 2.6em
+                padding .5em
+                white-space normal
 </style>

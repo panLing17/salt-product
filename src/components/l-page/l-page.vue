@@ -9,6 +9,7 @@
                 layout="sizes, prev, pager, next"
                 prev-text="上一页"
                 next-text="下一页"
+                :current-page.sync="currentPage"
                 :total="totalPage">
         </el-pagination>
     </div>
@@ -21,6 +22,10 @@ export default {
     totalPage: {
       type: Number,
       default: 0
+    },
+    currentPage: {
+      type: Number,
+      default: 1
     }
   },
   data () {
@@ -47,7 +52,7 @@ export default {
         height 28px
         position absolute
         bottom 0
-        left 2.7%
+        left 3%
         .el-pagination
             text-align right
             position relative

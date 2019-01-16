@@ -138,6 +138,8 @@
         }).then(res => {
           if(res.data.retCode === 1) {
             this.batchInfo.productName = res.data.retVal.productName
+            sessionStorage.setItem('currentDetail', JSON.stringify(this.batchInfo))
+            this.$forceUpdate()
           }
         })
       },
@@ -175,6 +177,9 @@
             })
           }
         })
+        if(params.length===0) {
+          return
+        }
         this.$confirm('确认删除这条数据?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -188,6 +193,7 @@
             }
           }).then((res) => {
               if (res.data.retCode === 1) {
+                this.getFeedList()
                 this.$message({
                     type: 'success',
                     message: '删除成功!'
@@ -218,7 +224,7 @@
                 right 0
         .table-wrap
             margin-top 1em
-            max-height 25em
+            max-height 15em
             overflow auto
         .btn-wrap
             position relative

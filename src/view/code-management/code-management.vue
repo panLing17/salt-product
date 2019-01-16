@@ -1,9 +1,9 @@
 <template>
     <div class="code-management">
         <div class="top-card white-bg">
-            <div class="top-title view-title">查询</div>
+            <!--<div class="top-title view-title">查询</div>-->
             <div class="search-wrap">
-                <label class="fs_20">申请时间</label>
+                <label>申请时间</label>
                 <el-date-picker
                         ref="elDatePicker"
                         size="mini"
@@ -14,18 +14,19 @@
                         end-placeholder="结束日期"
                         >
                 </el-date-picker>
-                <l-button :style="{'margin': '0 1em 0 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="getData"></l-button>
+                <l-button :style="{'margin': '11px 1em 11px 2.5em'}" v-if="btnPromise.search" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="search"></l-button>
+                <l-button buttonText="清空" :style="{'margin': '11px 0'}" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
             </div>
         </div>
         <div class="bottom-card white-bg">
             <div class="view-title">标码管理列表</div>
             <div class="table-button-wrap">
-                <table-button class="fs_18" :data="tableButtonArr1" @item-click="tableItemClick1"></table-button>
-                <table-button class="fs_18" style="margin-left: 2.777em" :data="tableButtonArr2" @item-click="tableItemClick2"></table-button>
-                <div class="table-button-single fs_18" @click="synData">同步标码管理</div>
+                <table-button v-if="btnPromise.search" :data="tableButtonArr1" @item-click="tableItemClick1"></table-button>
+                <table-button v-if="btnPromise.search" style="margin-left: 10px" :data="tableButtonArr2" @item-click="tableItemClick2"></table-button>
+                <div class="table-button-single"  v-if="btnPromise.sync" @click="synData">同步标码管理</div>
             </div>
             <div class="table-wrap">
-                <table class="fs_20 table-header">
+                <table class="table-header">
                     <colgroup width="20%"></colgroup>
                     <colgroup width="18%"></colgroup>
                     <colgroup width="10%"></colgroup>
@@ -36,15 +37,15 @@
                     <tr class="tr">
                         <th class="th">申请单号</th>
                         <th class="th">碘盐标志</th>
-                        <th class="th">包装</th>
+                        <th class="th">申请码类型</th>
                         <th class="th">申请量</th>
                         <th class="th">分段号</th>
                         <th class="th">起止序号</th>
                         <th class="th">操作</th>
                     </tr>
                 </table>
-                <div class="table-scroll fs_20">
-                    <table class="table fs_20">
+                <div class="table-scroll">
+                    <table class="table">
                         <colgroup width="20%"></colgroup>
                         <colgroup width="18%"></colgroup>
                         <colgroup width="10%"></colgroup>
@@ -53,16 +54,40 @@
                         <colgroup width="18%"></colgroup>
                         <colgroup width="12%"></colgroup>
                         <tr class="tr" v-for="(item, index) in data.dataList" :key="index">
-                            <td class="td">{{item.pkId}}</td>
-                            <td class="td">{{item.iodate}}</td>
-                            <td class="td">{{item.lvl}}级包装</td>
-                            <td class="td">{{item.amount}}</td>
-                            <td class="td">{{item.segment}}</td>
-                            <td class="td">{{item.stNo}}~{{item.edNo}}</td>
+                            <td class="td">
+                                <el-tooltip :open-delay="300" :content="item.pkId+''" placement="top">
+                                    <span style="cursor: pointer">{{item.pkId}}</span>
+                                </el-tooltip>
+                            </td>
+                            <td class="td">
+                                <el-tooltip :open-delay="300" :content="item.iodate" placement="top">
+                                    <span style="cursor: pointer">{{item.iodate}}</span>
+                                </el-tooltip>
+                            </td>
+                            <td class="td">
+                                <el-tooltip :open-delay="300" :content="item.lvl+'码'" placement="top">
+                                    <span style="cursor: pointer">{{item.lvl}}级码</span>
+                                </el-tooltip>
+                            </td>
+                            <td class="td">
+                                <el-tooltip :open-delay="300" :content="item.amount+''" placement="top">
+                                    <span style="cursor: pointer">{{item.amount}}</span>
+                                </el-tooltip>
+                            </td>
+                            <td class="td">
+                                <el-tooltip :open-delay="300" :content="item.segment+''" placement="top">
+                                    <span style="cursor: pointer">{{item.segment}}</span>
+                                </el-tooltip>
+                            </td>
+                            <td class="td">
+                                <el-tooltip :open-delay="300" :content="item.stNo+'~'+item.edNo" placement="top">
+                                    <span style="cursor: pointer">{{item.stNo}}~{{item.edNo}}</span>
+                                </el-tooltip>
+                            </td>
                             <td class="td btn-wrap">
-                                <div class="btn" @click="getDetail(item)">
-                                    <i class="fs_18 iconfont icon-xiangq"></i>
-                                    <span class="fs_18">详情</span>
+                                <div class="btn" @click="getDetail(item)" v-if="btnPromise.detail">
+                                    <i class="iconfont icon-xiangq"></i>
+                                    <span>详情</span>
                                 </div>
                             </td>
                         </tr>
@@ -73,13 +98,14 @@
                     :totalPage="data.total"
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
+                    :currentPage="params.reqParam.page"
             ></l-page>
         </div>
         <transition name="fade">
             <div class="mask" v-show="detailShow">
                 <div class="mask-content-wrap">
                     <div class="mask-title-wrap">
-                        <div class="mask-title fs_22">
+                        <div class="mask-title">
                             标码管理详情
                             <div class="close" @click="hideMask">
                                 <i class="iconfont icon-guanbi"></i>
@@ -87,7 +113,7 @@
                         </div>
                     </div>
                     <div class="mask-content">
-                        <table class="mask-table fs_20">
+                        <table class="mask-table">
                             <colgroup width="11%"></colgroup>
                             <colgroup width="39%"></colgroup>
                             <colgroup width="12%"></colgroup>
@@ -125,12 +151,12 @@
                             <tr>
                                 <td>印刷前缀</td>
                                 <td>{{detailData.prIntPrefix}}</td>
-                                <td>下载次数</td>
-                                <td>{{detailData.downTimes}}</td>
+                                <td></td>
+                                <td></td>
                             </tr>
                         </table>
                     </div>
-                    <div class="mask-btn-wrap fs_20">
+                    <div class="mask-btn-wrap">
                         <l-button buttonText="返回" @button-click="hideMask"></l-button>
                     </div>
                 </div>
@@ -159,11 +185,11 @@ export default {
           pkId: ''
         },
         {
-          dName: '1级包装',
+          dName: '1级码',
           pkId: 1
         },
         {
-          dName: '2级包装',
+          dName: '2级码',
           pkId: 2
         }
       ],
@@ -194,12 +220,14 @@ export default {
     }
   },
   created () {
-    this.getData()
     this.initData()
   },
   methods: {
     initData () {
       this.tableButtonArr1 = this.tableButtonArr1.concat(this.GLOBAL.dictionaryData[100])
+    },
+    clear() {
+      this.queryDate = ''
     },
     getData () {
       this.$http({
@@ -208,6 +236,9 @@ export default {
         data: this.params
       }).then((res) => {
         if (res.data.retCode === 1) {
+          res.data.retVal.dataList.forEach(item=>{
+            item.iodate = this.$method.queryDictionary.call(this, 100, item.iodate)
+          })
           this.data = res.data.retVal
         }
       })
@@ -271,9 +302,9 @@ export default {
                 margin 0 .5em 0 2.85em
         .table-wrap
             width 94.38%
-            height 70%
+            /*height 70%*/
             margin 1% auto 0
-            overflow auto
+            /*overflow auto*/
             box-sizing border-box
             .table-scroll
                 height calc(100% - 2.5em)
@@ -286,8 +317,9 @@ export default {
             .mask-table
                 width 94%
                 margin-top 1.95em
-                td
-                    height 2.5em
+                tr
+                    td
+                        height 2.5em
             .mask-btn-wrap
                 width 87.5%
                 margin 0 auto

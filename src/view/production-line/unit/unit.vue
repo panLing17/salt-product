@@ -6,16 +6,16 @@
                 <div class="unit-col-1">
                     <span>*</span>
                     <label>单元编码</label>
-                    <input type="text" v-model="unit.code" @input="unitInput">
+                    <input type="text" :disabled="unitBack" :style="{'background-color': unitBack?'#d0d0d0':''}" v-model="unit.code" @input="unitInput">
                 </div>
                 <div class="unit-col-2">
                     <span>*</span>
                     <label>单元名称</label>
-                    <input type="text" v-model="unit.name" @input="unitInput">
-                    <l-button buttonText="增加产线" style="margin-left: .5em" @button-click="addLineFn"></l-button>
+                    <input type="text" :style="{'background-color': wType===97010 || wType===97020?'':'#d0d0d0'}" :disabled="wType===97010 || wType===97020?false:true" v-model="unit.name" @input="unitInput">
+                    <l-button v-if="btnPromise.addLine" :bgColor="wType===97010 || wType===97020?'#5273CE':'#d0d0d0'" buttonText="增加产线" style="margin-left: .5em" @button-click="addLineFn2"></l-button>
                 </div>
                 <div class="unit-col-3">
-                    <l-button buttonText="删除单元" @button-click="delUnit"></l-button>
+                    <l-button buttonText="删除单元" :bgColor="unitBack?'#d0d0d0':'#5273CE'" @button-click="delUnit"></l-button>
                 </div>
             </li>
         </ul>
@@ -41,6 +41,15 @@
       },
       delLineCallback: {
         type: Function
+      },
+      btnPromise: {
+        type: Object
+      },
+      unitBack: {
+        type: Object
+      },
+      wType: {
+        type: Number
       }
     },
     data () {
@@ -55,9 +64,10 @@
     },
     created () {
       this.show()
+      this.initData()
     },
     mounted () {
-      this.addLine()
+      // this.addLine()
     },
     methods: {
       show () {
@@ -66,20 +76,50 @@
       hide () {
         this.unitShow = false
       },
-      addLine () {
-        if (this.isAddLine) {
-          this.$nextTick(() => {
-            this.$line({
-              fatherId: 'unit' + this.id,
-              id: 1,
-              delLineFn: this.delLineFn,
-              lineInputFn: this.lineInputFn,
-              preId: this.id
+      initData() {
+        if(typeof this.unitBack !== 'undefined') {
+          this.unit.code = this.unitBack.workId
+          this.unit.name = this.unitBack.unitName
+
+          if(this.unitBack.lines.length > 0) {
+            this.unitBack.lines.forEach(item=>{
+              this.addLineFn(item)
             })
-          })
+          }
         }
       },
-      addLineFn () {
+      // addLine () {
+      //   if (this.isAddLine) {
+      //     this.$nextTick(() => {
+      //       this.$line({
+      //         fatherId: 'unit' + this.id,
+      //         id: 1,
+      //         delLineFn: this.delLineFn,
+      //         lineInputFn: this.lineInputFn,
+      //         preId: this.id
+      //       })
+      //     })
+      //   }
+      // },
+      addLineFn (item) {
+        this.$nextTick(()=>{
+          let p = {
+            fatherId: 'unit' + this.id,
+            id: ++this.count,
+            delLineFn: this.delLineFn,
+            lineInputFn: this.lineInputFn,
+            preId: this.id
+          }
+          if(typeof item !== 'undefined') {
+            p.lineBack = item
+          }
+          this.$line(p)
+        })
+      },
+      addLineFn2() {
+        if(!(this.wType === 97010 || this.wType === 97020)) {
+          return
+        }
         this.$line({
           fatherId: 'unit' + this.id,
           id: ++this.count,
@@ -89,6 +129,9 @@
         })
       },
       delUnit () {
+        if(typeof this.unitBack !== 'undefined') {
+          return
+        }
         this.$emit('del-unit', 'unitWrap' + this.id)
         this.delUnitFn ? this.delUnitFn('unitWrap' + this.id) : ''
         this.$destroy()

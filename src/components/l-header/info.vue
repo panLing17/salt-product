@@ -21,7 +21,7 @@
                         <el-collapse-item :title="'性别：'+$method.queryDictionary.call(this, 800, data.sex)" name="2">
                             <div class="block">
                                 <label>性别</label>
-                                <el-select v-model="params.reqParam.sex" filterable placeholder="请选择">
+                                <el-select v-model="params.reqParam.sex" filterable clearable placeholder="请选择">
                                     <el-option
                                             v-for="item in sexList"
                                             :key="item.pkId"
@@ -35,6 +35,12 @@
                             <div class="block">
                                 <label>所属单位：</label>
                                 <input type="text" v-model="data.unitName" readonly>
+                            </div>
+                        </div>
+                        <div class="readonly">
+                            <div class="block">
+                                <label>岗位：</label>
+                                <input type="text" v-model="data.jobTitle" readonly>
                             </div>
                         </div>
                         <el-collapse-item :title="'手机号：'+data.mobile" name="3">
@@ -122,7 +128,7 @@
 <style scoped lang="stylus">
 .mask-content-wrap
     width 60%
-    height 60%
+    min-height 60%
     .block
         label
             color #414141

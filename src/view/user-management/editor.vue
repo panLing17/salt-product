@@ -26,7 +26,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <input type="text" v-model="data.uId">
+                                <input type="text" readonly v-model="data.uId">
                             </td>
                             <td>
                                 <input type="text" v-model="data.jobTitle">
@@ -47,7 +47,7 @@
                                 <input type="text" v-model="data.uName">
                             </td>
                             <td>
-                                <el-select class="fs_20" filterable v-model="sexActive" placeholder="">
+                                <el-select class="fs_20" filterable clearable v-model="sexActive" placeholder="">
                                     <el-option
                                             v-for="item in sex"
                                             :key="item.pkId"
@@ -69,7 +69,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <el-select class="fs_20" filterable v-model="uTypeActive" placeholder="">
+                                <el-select class="fs_20" filterable clearable v-model="uTypeActive" placeholder="">
                                     <el-option
                                             v-for="item in uType"
                                             :key="item.pkId"
@@ -137,7 +137,27 @@
         }
         params.reqParam.uType = this.$method.queryDictionaryForName.call(this, 500, this.uTypeActive)
         params.reqParam.sex = this.$method.queryDictionaryForName.call(this, 800, this.sexActive)
-        console.log(this.sexActive)
+
+        let temp = {}
+        temp.uName = params.reqParam.uName
+        temp.uType = params.reqParam.uType
+        temp.sex = params.reqParam.sex
+        temp.mobile = params.reqParam.mobile
+        temp.jobTitle = params.reqParam.jobTitle
+        if(!this.$method.check(temp, {
+          uName: '姓名',
+          uType: '类型',
+          sex: '性别',
+          mobile: '手机号',
+          jobTitle: '岗位'
+        }, {
+          uName: 50,
+          mobile: 15,
+          jobTitle: 50
+        })) {
+          return
+        }
+
         this.$http({
           url: this.$api + 'produce/resources/rs/users/update',
           method: 'post',

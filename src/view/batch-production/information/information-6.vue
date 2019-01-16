@@ -1,9 +1,13 @@
 <template>
     <div class="information-1 clear-float">
         <div class="img">
-            <img :src="data.report" @error="$method.imgError($event)" alt="">
+            <img :src="data.report" @click="$method.magnifier(data.report)" @error="$method.imgError($event)" alt="">
         </div>
         <table class="table fs_20">
+            <colgroup width="15%"></colgroup>
+            <colgroup width="35%"></colgroup>
+            <colgroup width="15%"></colgroup>
+            <colgroup width="35%"></colgroup>
             <tr class="tr">
                 <td class="td">检验单号</td>
                 <td class="td">{{data.billCode}}</td>
@@ -91,7 +95,9 @@
         .table
             float right
             width 75%
+            table-layout auto
             .tr
                 .td
-                    height 3em
+                    padding .5em
+                    white-space normal
 </style>

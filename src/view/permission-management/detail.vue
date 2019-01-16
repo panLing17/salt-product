@@ -45,10 +45,27 @@
                             </ul>
                             <div v-for="(father, fi) in grandfather.child" :key="fi">
                                 <ul class="button-content">
-                                    <li class="text fs_20" v-show="father.selected" v-for="(children, ci) in father.child" :key="ci">
-                                        <span>{{children.sName}}</span>
+                                    <li class="text fs_20"
+                                        v-show="father.selected"
+                                        v-for="(children, ci) in father.child"
+                                        :key="ci"
+                                        @click="childrenClick(index, fi, ci)"
+                                    >
+                                        <span
+                                                :style="{color: children.selected || (father.pkId!==11500)?'#5F7FD9':'#414141'}"
+                                        >{{children.sName}}</span>
                                     </li>
                                 </ul>
+                                <div v-for="(children, ci) in father.child" v-if="father.pkId===11500">
+                                    <ul class="button-content" style="padding-left: 40px">
+                                        <li class="text fs_20"
+                                            v-for="(li, liIndex) in children.child"
+                                            v-show="children.selected && father.selected"
+                                        >
+                                            <span>{{li.sName}}</span>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </el-collapse-item>
                     </el-collapse>
@@ -103,6 +120,18 @@
           }
         })
         this.$forceUpdate()
+      },
+      childrenClick(gi, fi, ci) {
+        if(this.promiseData[gi].child[fi].pkId === 11500) {
+          this.promiseData[gi].child[fi].child.forEach((a, i)=>{
+            if(i===ci) {
+              a.selected = true
+            } else {
+              a.selected = false
+            }
+          })
+        }
+        this.$forceUpdate()
       }
     }
   }
@@ -125,6 +154,32 @@
                 tr
                     td
                         height 2em
+            /*.button-list*/
+                /*font-size 0*/
+                /*.button*/
+                    /*display inline-block*/
+                    /*padding 0 1em*/
+                    /*border-right 1px solid #BFBFBF*/
+                    /*line-height 1.1em*/
+                    /*margin-bottom .8em*/
+                    /*cursor pointer*/
+                    /*user-select none*/
+                    /*&.second*/
+                        /*span*/
+                            /*&.active*/
+                                /*border-bottom 1px solid #5F7FD9*/
+                    /*&:last-child*/
+                        /*border none*/
+                    /*span*/
+                        /*position relative*/
+                        /*padding-bottom .1em*/
+            /*.button-content*/
+                /*font-size 0*/
+                /*.text*/
+                    /*display inline-block*/
+                    /*padding .5em 1em*/
+                    /*line-height 1.1em*/
+                    /*color #5F7FD9*/
             .button-list
                 font-size 0
                 .button
@@ -135,22 +190,23 @@
                     margin-bottom .8em
                     cursor pointer
                     user-select none
-                    &.second
-                        span
-                            &.active
-                                border-bottom 1px solid #5F7FD9
                     &:last-child
                         border none
                     span
                         position relative
                         padding-bottom .1em
+                        &.active
+                            border-bottom 1px solid #5F7FD9
             .button-content
                 font-size 0
+                cursor pointer
+                padding-left 20px
                 .text
                     display inline-block
                     padding .5em 1em
                     line-height 1.1em
                     color #5F7FD9
+                    user-select none
         .mask-btn-wrap
             width 85%
             margin 0 auto

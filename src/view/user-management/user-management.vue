@@ -1,21 +1,21 @@
 <template>
     <div class="user-management">
         <div class="top-card white-bg">
-            <div class="top-title view-title">查询</div>
+            <!--<div class="top-title view-title">查询</div>-->
             <div class="search-wrap">
                 <label class="fs_20">账号</label>
                 <input type="text" v-model="params.reqParam.uId"/>
                 <label class="fs_20">姓名</label>
                 <input type="text" v-model="params.reqParam.uName" />
-                <l-button :style="{'margin': '0 1em 0 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="getData"></l-button>
-                <l-button buttonText="清空" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
+                <l-button v-if="btnPromise.search" :style="{'margin': '11px 1em 11px 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="search"></l-button>
+                <l-button buttonText="清空" :style="{'margin': '11px 0'}" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
             </div>
         </div>
         <div class="bottom-card white-bg">
             <div class="view-title">用户管理列表</div>
             <div class="table-button-wrap">
-                <table-button class="fs_18" :data="tableButtonArr1" @item-click="tableItemClick1"></table-button>
-                <div class="table-button-single fs_18" @click="openAdd">
+                <table-button v-if="btnPromise.search" class="fs_18" :data="tableButtonArr1" @item-click="tableItemClick1"></table-button>
+                <div v-if="btnPromise.add" class="table-button-single fs_18" @click="openAdd">
                     <i class="iconfont icon-xinz fs_16"></i>
                     <span>新增用户</span>
                 </div>
@@ -56,24 +56,21 @@
                             <td class="td">{{item.uType}}</td>
                             <td class="td">{{item.jobTitle}}</td>
                             <td class="td btn-wrap">
-                                <div class="btn" @click="getDetail(item, 0)">
+                                <div v-if="btnPromise.detail" class="btn" @click="getDetail(item, 0)">
                                     <i class="fs_18 iconfont icon-xiangq"></i>
                                     <span class="fs_18">详情</span>
                                 </div>
-                                <div class="btn" @click.stop="openPop(index)">
-                                    <i class="fs_18 iconfont icon-guanli"></i>
-                                    <span class="fs_18">管理</span>
-                                    <i class="fs_16 iconfont icon-jiant-x" style="margin-left: .2em"></i>
-                                    <div class="pop-btn fs_20" v-show="item.btnPopShow">
-                                        <div class="sanjiao"></div>
-                                        <ul class="pop-list">
-                                            <li class="pop-item" @click="del(index)">删除</li>
-                                            <li class="pop-item" @click="getDetail(item, 1)">编辑</li>
-                                            <li class="pop-item" @click="getDetail(item, 2)">设置权限组</li>
-                                            <li class="pop-item" @click="resetPwd(item)">重置密码</li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                <el-dropdown trigger="click"  @command="handleChange">
+                                  <span class="el-dropdown-link">
+                                    <i class="iconfont icon-guanli"></i>管理<i class="fs_16 iconfont icon-jiant-x"></i>
+                                  </span>
+                                    <el-dropdown-menu slot="dropdown">
+                                        <el-dropdown-item :command="{flag:0,index}" v-if="btnPromise.del">删除</el-dropdown-item>
+                                        <el-dropdown-item :command="{flag:1,item}" v-if="btnPromise.editor">编辑</el-dropdown-item>
+                                        <el-dropdown-item :command="{flag:2,item}" v-if="btnPromise.set">设置权限组</el-dropdown-item>
+                                        <el-dropdown-item :command="{flag:3,item}" v-if="btnPromise.reset">重置密码</el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </el-dropdown>
                             </td>
                         </tr>
                     </table>
@@ -83,6 +80,7 @@
                     :totalPage="data.total"
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
+                    :currentPage="params.reqParam.page"
             ></l-page>
         </div>
         <add ref="add"></add>
@@ -123,7 +121,6 @@
       }
     },
     created () {
-      this.getData()
       this.initData()
     },
     methods: {
@@ -236,6 +233,15 @@
             }
           )
         }).catch(() => {})
+      },
+      handleChange(data) {
+        if(data.flag === 0) {
+          this.del(data.index)
+        } else if(data.flag === 3){
+          this.resetPwd(data.item)
+        } else {
+          this.getDetail(data.item, data.flag)
+        }
       }
     },
     components: {
@@ -261,8 +267,8 @@
                 right 0
         .table-wrap
             width 94.38%
-            height 70%
+            /*height 70%*/
             margin 1% auto 0
-            overflow auto
+            /*overflow auto*/
             box-sizing border-box
 </style>

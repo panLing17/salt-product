@@ -93,7 +93,10 @@
         font-size 13px
         .mask-content
             width 21em
-            margin 5em auto 0
+            position absolute
+            top 25%
+            left 50%
+            transform translateX(-50%)
         .block
             margin 0 auto
             label

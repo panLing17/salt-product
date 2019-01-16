@@ -78,7 +78,7 @@
         <div class="btn-wrap clear-float">
             <div class="table-button-single" @click="$router.push('/addBatch/step3')"  style="margin-left: .5em">下一步</div>
             <div class="table-button-single" style="margin-left: .5em" @click="$router.push('/addBatch/step3')">跳过</div>
-            <div class="table-button-single" @click="$router.go(-1)">上一步</div>
+            <div class="table-button-single" @click="goBack">上一步</div>
             <div class="table-button-single" style="margin-right: .5em" @click="del">批量删除</div>
         </div>
         <detail ref="detail"></detail>
@@ -159,6 +159,9 @@
             })
           }
         })
+        if(params.length===0) {
+          return
+        }
         this.$confirm('确认删除这条数据?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -172,6 +175,7 @@
             }
           }).then((res) => {
               if (res.data.retCode === 1) {
+                this.getFeedList()
                 this.$message({
                     type: 'success',
                     message: '删除成功!'
@@ -181,6 +185,9 @@
             }
           )
         }).catch(() => {})
+      },
+      goBack() {
+        this.$router.push({path: '/addBatch/step1', query: {id: this.batchInfo.pkId}})
       }
     },
     components: {
@@ -202,7 +209,7 @@
                 right 0
         .table-wrap
             margin-top 1em
-            max-height 25em
+            max-height 15em
             overflow auto
         .btn-wrap
             position relative

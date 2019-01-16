@@ -1,6 +1,10 @@
 <template>
     <div class="information-2">
         <table class="table fs_20">
+            <colgroup width="15%"></colgroup>
+            <colgroup width="35%"></colgroup>
+            <colgroup width="15%"></colgroup>
+            <colgroup width="35%"></colgroup>
             <tr class="tr">
                 <td class="td">生产批号</td>
                 <td class="td" colspan="3">{{currentDetail.batch}}</td>
@@ -60,7 +64,9 @@
 
 <style scoped lang="stylus">
     .table
+        table-layout auto
         .tr
             .td
-                height 2.6em
+                padding .5em
+                white-space normal
 </style>

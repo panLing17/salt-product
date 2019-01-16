@@ -29,7 +29,7 @@
                                 <input type="text" v-model="params.reqParam.uId">
                             </td>
                             <td>
-                                <input type="text" v-model="params.reqParam.uPwd">
+                                <input type="password" v-model="params.reqParam.uPwd">
                             </td>
                         </tr>
                         <tr class="label-wrap">
@@ -47,7 +47,7 @@
                                 <input type="text" v-model="params.reqParam.uName">
                             </td>
                             <td>
-                                <el-select class="fs_20" filterable v-model="params.reqParam.sex" placeholder="">
+                                <el-select class="fs_20" filterable clearable v-model="params.reqParam.sex" placeholder="">
                                     <el-option
                                             v-for="item in sex"
                                             :key="item.pkId"
@@ -69,7 +69,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <el-select class="fs_20" filterable v-model="params.reqParam.uType" placeholder="">
+                                <el-select class="fs_20" filterable clearable v-model="params.reqParam.uType" placeholder="">
                                     <el-option
                                             v-for="item in uType"
                                             :key="item.pkId"
@@ -152,6 +152,23 @@
         this.maskShow = false
       },
       right () {
+        if(!this.$method.check(this.params.reqParam, {
+          uId: '账号',
+          uName: '姓名',
+          uPwd: '初始密码',
+          uType: '类型',
+          sex: '性别',
+          mobile: '手机号',
+          jobTitle: '岗位'
+        }, {
+          uId: 50,
+          uName: 50,
+          uPwd:  256,
+          mobile: 15,
+          jobTitle: 50
+        })) {
+          return
+        }
         this.$http({
           url: this.$api + 'produce/resources/rs/users/save',
           method: 'post',
@@ -211,6 +228,7 @@
                             padding-left 1em
                         textarea
                             border-radius 4px
+                            border 1px solid #BFBFBF
                             &.special
                                 width 100%
                                 height 3em

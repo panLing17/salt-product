@@ -16,206 +16,63 @@
                     ></i>
                 </div>
             </div>
-            <div class="bottom" v-show="menuActive===0">
+            <div class="bottom">
                 <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===0, 'no-padding': !menuStatus}"
-                     @click.stop.prevent="navClick(0)"
+                     v-for="item in navList"
                 >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-mabiao fs_22" :style="{color: navActive===0?'#203262':'#ffffff'}"></i>
+                    <div class="icon-wrap"
+                         @click="navClick(item.pkId, 0, item, {})"
+                         :class="{active: navActive===item.pkId && !item.hasSecond, 'no-padding': !menuStatus}"
+                         :style="{'text-align': !menuStatus?'center':''}"
+                    >
+                        <i class="iconfont fs_22"
+                           :class="[item.icon]"
+                           ></i>
+                        <span class="text" v-show="navTextShow">{{item.sName}}</span>
+                        <i class="iconfont icon-jiant"
+                           v-show="navTextShow"
+                           v-if="item.hasSecond"
+                           :class="{trans: item.secondShow}"                        ></i>
                     </div>
-                    <div class="text" v-show="navTextShow">码标管理</div>
-                </div>
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===1, 'no-padding': !menuStatus}"
-                     @click="navClick(1)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-chanp fs_22" :style="{color: navActive===1?'#203262':'#ffffff'}"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">产品管理</div>
-                </div>
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{'no-padding': !menuStatus}"
-                     @click="secondShow=!secondShow"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-wuliao fs_22"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">物料信息</div>
-                    <div class="arrow" v-show="navTextShow">
-                        <img src="./img/arrow.png" alt="">
-                    </div>
-                    <ul class="second" v-show="secondShow && !navTextShow">
+                    <ul class="second" v-show="item.secondShow && !navTextShow" v-if="item.hasSecond">
                         <li class="sanjiao"></li>
-                        <li class="fs_20" :class="{active: navActive===2}" @click.stop="secondShow=false,navClick(2)">原料基本信息</li>
-                        <li class="fs_20" :class="{active: navActive===3}" @click.stop="secondShow=false,navClick(3)">原料生产企业</li>
-                        <li class="fs_20" :class="{active: navActive===4}" @click.stop="secondShow=false,navClick(4)">辅料基本信息</li>
-                        <li class="fs_20" :class="{active: navActive===5}" @click.stop="secondShow=false,navClick(5)">辅料生产企业</li>
+                        <li class="fs_20"
+                            :class="{active: navActive===li.pkId}"
+                            @click.stop="navClick(li.pkId, 1, li, item)"
+                            v-for="li in item.child"
+                        >{{li.sName}}</li>
                     </ul>
-                </div>
-                <div class="fold-wrap"
-                     style="overflow: hidden"
-                     :style="{height: secondShow && navTextShow?navSecondHeight+'px':'0'}">
-                    <transition name="fold">
-                        <ul class="special" ref="special" v-show="secondShow && navTextShow" >
-                            <li class="fs_20" :class="{active: navActive===2}" @click.stop="navClick(2)">原料基本信息</li>
-                            <li class="fs_20" :class="{active: navActive===3}" @click.stop="navClick(3)">原料生产企业</li>
-                            <li class="fs_20" :class="{active: navActive===4}" @click.stop="navClick(4)">辅料基本信息</li>
-                            <li class="fs_20" :class="{active: navActive===5}" @click.stop="navClick(5)">辅料生产企业</li>
+                    <div class="fold-wrap"
+                         :style="{'height': item.secondShow?item.childHeight:'0px'}"                        
+                          v-if="item.hasSecond"
+                         ref="foldWrap"
+                         v-show="navTextShow"
+                    >
+                        <ul class="special" ref="special" v-show="navTextShow" >
+                            <li class="fs_20"
+                                v-for="li in item.child"
+                                :class="{active: navActive===li.pkId}"
+                                @click.stop="navClick(li.pkId, 0, li, item)"
+                            >{{li.sName}}</li>
                         </ul>
-                    </transition>
-                </div>
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===6, 'no-padding': !menuStatus}"
-                     @click="navClick(6)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-chanxian fs_22" :style="{color: navActive===6?'#203262':'#ffffff'}"></i>
                     </div>
-                    <div class="text" v-show="navTextShow">产线车间</div>
                 </div>
-
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===7, 'no-padding': !menuStatus}"
-                     @click="navClick(7)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-xingz fs_22" :style="{color: navActive===7?'#203262':'#ffffff'}"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">行政区划</div>
-                </div>
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===8, 'no-padding': !menuStatus}"
-                     @click="navClick(8)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-quanxiangl fs_22" :style="{color: navActive===8?'#203262':'#ffffff'}"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">权限组管理</div>
-                </div>
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===9, 'no-padding': !menuStatus}"
-                     @click="navClick(9)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-yonghu fs_22" :style="{color: navActive===9?'#203262':'#ffffff'}"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">用户管理</div>
-                </div>
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===10, 'no-padding': !menuStatus}"
-                     @click="navClick(10)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-huaban fs_22" :style="{color: navActive===10?'#203262':'#ffffff'}"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">企业信息</div>
-                </div>
-                <div class="version" v-show="navTextShow">版本:v.2.1.0 | 江苏瑞德信息技术有限公司</div>
             </div>
-            <div class="bottom" v-show="menuActive===1">
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===11, 'no-padding': !menuStatus}"
-                     @click.stop.prevent="navClick(11)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-shengczx- fs_22" :style="{color: navActive===11?'#203262':'#ffffff'}"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">原料批次管理</div>
-                </div>
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===12, 'no-padding': !menuStatus}"
-                     @click.stop.prevent="navClick(12)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-shengczx-png3 fs_22" :style="{color: navActive===12?'#203262':'#ffffff'}"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">辅料批次管理</div>
-                </div>
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===13, 'no-padding': !menuStatus}"
-                     @click.stop.prevent="navClick(13)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-shengczx-png fs_22" :style="{color: navActive===13?'#203262':'#ffffff'}"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">批次生产任务</div>
-                </div>
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===14, 'no-padding': !menuStatus}"
-                     @click.stop.prevent="navClick(14)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-shengczx-png1 fs_22" :style="{color: navActive===14?'#203262':'#ffffff'}"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">批次追溯查询</div>
-                </div>
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===15, 'no-padding': !menuStatus}"
-                     @click.stop.prevent="navClick(15)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-shengczx-png2 fs_22" :style="{color: navActive===15?'#203262':'#ffffff'}"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">码追溯查询</div>
-                </div>
-                <div class="version" v-show="navTextShow">版本:v.2.1.0 | 江苏瑞德信息技术有限公司</div>
-            </div>
-            <div class="bottom" v-show="menuActive===2">
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===16, 'no-padding': !menuStatus}"
-                     @click.stop.prevent="navClick(16)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-shengczx- fs_22" :style="{color: navActive===16?'#203262':'#ffffff'}"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">登录日志</div>
-                </div>
-                <div class="nav fs_22"
-                     :style="{'justify-content': menuStatus?'':'center'}"
-                     :class="{active: navActive===17, 'no-padding': !menuStatus}"
-                     @click.stop.prevent="navClick(17)"
-                >
-                    <div class="icon-wrap">
-                        <i class="iconfont icon-shengczx-png3 fs_22" :style="{color: navActive===17?'#203262':'#ffffff'}"></i>
-                    </div>
-                    <div class="text" v-show="navTextShow">维护日志</div>
-                </div>
-                <div class="version" v-show="navTextShow">版本:v.2.1.0 | 江苏瑞德信息技术有限公司</div>
-            </div>
+            <div class="version" v-show="navTextShow">版本:v.2.1.0 | 江苏瑞德信息技术有限公司</div>
         </div>
         <div class="right" :style="{width: menuStatus?'83%':'96.67%'}">
             <div class="top">
-                <!--<div class="menu" v-for="(item, index) in GLOBAL.listByUser" :class="{active: menuActive===index}" @click="menuChange(index)">-->
-                    <!--<div>{{item.sName}}</div>-->
-                <!--</div>-->
-                <div class="menu" :class="{active: menuActive===0}" @click="menuChange(0)">
-                    <div>资源中心</div>
-                </div>
-                <div class="menu" :class="{active: menuActive===1}" @click="menuChange(1)">
-                    <div>生产中心</div>
-                </div>
-                <div class="menu" :class="{active: menuActive===2}" @click="menuChange(2)">
-                    <div>监控中心</div>
+                <div class="menu"
+                     v-for="(item, index) in GLOBAL.listByUser"
+                     :class="{active: menuActive===index}"
+                     @click="menuChange(index)"
+                     v-show="item.pkId!==80000"
+                >
+                    <div>{{item.sName}}</div>
                 </div>
             </div>
             <div class="bottom">
-                <router-view @count-change="$emit('count-change')"></router-view>
+                <router-view @count-change="$emit('count-change')" :navList="navList" :navActive="navActive"></router-view>
             </div>
         </div>
     </div>
@@ -232,12 +89,6 @@ export default {
       bodyHeight: document.body.clientHeight,
       navActive: 0, // 左侧导航选中
       navTextShow: true,
-      navList: {
-        0:{},
-        1:{},
-        2:{}
-      },
-      secondShow: false,
       navSecondHeight: 0
     }
   },
@@ -247,139 +98,249 @@ export default {
     },
     liHeight () {
       return this.bodyHeight * (48 / BASE_HEIGHT) + 'px'
-    }
-  },
-  watch: {
-    '$route'(to, from) {
-      this.initData(to)
+    },
+    navList() {
+      return this.GLOBAL.listByUser[this.menuActive].child
     }
   },
   created() {
-    console.log(this.bodyHeight)
-    this.initData(this.$route)
-    this.getNavList()
+    this.listByUserIcon()
+    // this.initData()
   },
   mounted() {
-    this.secondShow = true
-    this.$nextTick(()=>{
-      this.navSecondHeight = this.$refs.special.offsetHeight
-      this.secondShow = false
-    })
+
   },
   methods: {
-    getNavList() {
-      this.GLOBAL.listByUser.forEach((item,index)=>{
-        item.child.forEach(c=>{
-          if(c.pid===1) {
-            this.navList[0][c.pkId] = true
-          } else if(c.pid===2) {
-            this.navList[1][c.pkId] = true
-          } else if(c.pid===3) {
-            this.navList[1][c.pkId] = true
+    listByUserIcon() {
+      console.log(this.GLOBAL.listByUser)
+      this.GLOBAL.listByUser.forEach((a, ai)=>{
+        a.child.forEach((b,index)=>{
+          if(b.hasSecond) {
+            b.childHeight = b.child.length * 25 + 'px'
+          }
+          switch (b.pkId) {
+            case 10500:
+              b.icon = 'icon-mabiao'
+              b.child[0].url = '/codeManagement'
+              b.child[1].url = '/codeManagementZY'
+              break
+            case 11000:
+              b.icon = 'icon-chanp'
+              b.child[0].url = '/productManagement'
+              b.child[1].url = '/productManagementZY'
+              break
+            case 11500:
+              b.icon = 'icon-wuliao'
+              b.child.forEach(c=>{
+                switch (c.pkId) {
+                  case 11510:
+                    c.url = '/materialInfo'
+                    break
+                  case 11520:
+                    c.url = '/materialCompany'
+                    break
+                  case 11530:
+                    c.url = '/auxiliaryInfo'
+                    break
+                  case 11540:
+                    c.url = '/auxiliaryCompany'
+                    break
+                }
+              })
+              break
+            case 10:
+              b.icon = 'icon-pifqy'
+              b.child[0].url = '/wholesaleCompanyTC'
+              b.child[1].url = '/wholesaleCompanyZY'
+              break
+            case 20:
+              b.icon = 'icon-jinyqy'
+              b.child[0].url = '/enterprisesManagementTc'
+              b.child[1].url = '/enterprisesManagementZy'
+              break
+            case 40500:
+              b.icon = 'icon-sccrk'
+              b.url = '/production-stock'
+              break
+            case 50500:
+              b.icon = 'icon-scbg'
+              b.url = '/production-report'
+              break
+            case 12000:
+              b.icon = 'icon-chanxian'
+              b.url = '/productionLine'
+              break
+            case 12500:
+              b.icon = 'icon-xingz'
+              b.url = '/administrativeDivision'
+              break
+            case 13000:
+              b.icon = 'icon-quanxiangl'
+              b.url = '/permissionManagement'
+              break
+            case 13500:
+              b.icon = 'icon-yonghu'
+              b.url = '/userManagement'
+              break
+            case 14000:
+              b.icon = 'icon-huaban'
+              b.url = '/enterpriseInformation'
+              break
+            case 20500:
+              b.icon = 'icon-shengczx-'
+              b.url = '/materialsBatch'
+              break
+            case 21000:
+              b.icon = 'icon-shengczx-png3'
+              b.url = '/auxiliaryBatch'
+              break
+            case 21500:
+              b.icon = 'icon-shengczx-png'
+              b.url = '/batchProduction'
+              break
+            case 22000:
+              b.icon = 'icon-shengczx-png1'
+              b.url = '/traceBack'
+              break
+            case 22500:
+              b.icon = 'icon-shengczx-png2'
+              b.url = '/traceBackCode'
+              break
+            case 30500:
+              b.icon = 'icon-dlrz'
+              b.url = '/loginLog'
+              break
+            case 31000:
+              b.icon = 'icon-weihrz'
+              b.url = '/protectLog'
+              break
           }
         })
       })
-    },
-    initData(to) {
-      let flag = to.matched[1].meta.flag
-      if (flag === 1) {
-        this.menuActive = 0
-        switch (to.name) {
-          case '码标管理':
-            this.navActive = 0
-            break
-          case '产品管理':
-            this.navActive = 1
-            break
-          case '原料基本信息':
-            this.navActive = 2
-            break
-          case '原料生产企业':
-            this.navActive = 3
-            break
-          case '辅料基本信息':
-            this.navActive = 4
-            break
-          case '辅料生产企业':
-            this.navActive = 5
-            break
-          case '产线车间':
-            this.navActive = 6
-            break
-          case '行政区划':
-            this.navActive = 7
-            break
-          case '权限组管理':
-            this.navActive = 8
-            break
-          case '用户管理':
-            this.navActive = 9
-            break
-          case '企业信息':
-            this.navActive = 10
-            break
-        }
-      } else if (flag === 2) {
-        this.menuActive = 1
-        switch (this.$route.name) {
-          case '原料批次管理':
-            this.navActive = 11
-            break
-          case '批次生产任务':
-            this.navActive = 13
-            break
-          case '新增批次生产任务':
-            this.navActive = 13
-            break
-          case '步骤1':
-            this.navActive = 13
-            break
-          case '步骤2':
-            this.navActive = 13
-            break
-          case '步骤3':
-            this.navActive = 13
-            break
-          case '信息汇总':
-            this.navActive = 13
-            break
-          case '产品信息':
-            this.navActive = 13
-            break
-          case '生产批次信息':
-            this.navActive = 13
-            break
-          case '批次投料信息':
-            this.navActive = 13
-            break
-          case '批次生产任务信息':
-            this.navActive = 13
-            break
-          case '抽检信息':
-            this.navActive = 13
-            break
-          case '检验信息':
-            this.navActive = 13
-            break
-          case '批次追溯查询':
-            this.navActive = 14
-            break
-          case '码追溯查询':
-            this.navActive = 15
-            break
-        }
-      } else if(flag===3) {
-        this.menuActive = 2
-        switch (this.$route.name) {
-          case '登录日志':
-            this.navActive = 16
-            break
-          case '维护日志':
-            this.navActive = 17
-            break
-        }
+      if(this.GLOBAL.listByUser[0].child[0].hasSecond && this.GLOBAL.listByUser[0].child[0].child.length > 0) {
+        this.$router.push(this.GLOBAL.listByUser[0].child[0].child[0].url)
+        this.navActive = this.GLOBAL.listByUser[0].child[0].child[0].pkId
+        this.GLOBAL.listByUser[0].child[0].secondShow = true
+      } else if(!this.GLOBAL.listByUser[0].child[0].hasSecond){
+        this.$router.push(this.GLOBAL.listByUser[0].child[0].url)
+        this.navActive = this.GLOBAL.listByUser[0].child[0].pkId
       }
+      this.$forceUpdate()
     },
+    // initData() {
+    //   if(typeof this.$route.matched[1] === 'undefined') {
+    //     return
+    //   }
+    //   let flag = this.$route.matched[1].meta.flag
+    //   if (flag === 1) {
+    //     switch (this.$route.name) {
+    //       case '码标管理':
+    //         this.navActive = 10500
+    //         break
+    //       case '产品管理':
+    //         this.navActive = 11000
+    //         break
+    //       case '原料基本信息':
+    //         this.navActive = 11510
+    //         break
+    //       case '原料生产企业':
+    //         this.navActive = 11520
+    //         break
+    //       case '辅料基本信息':
+    //         this.navActive = 11530
+    //         break
+    //       case '辅料生产企业':
+    //         this.navActive = 11540
+    //         break
+    //       case '产线车间':
+    //         this.navActive = 12000
+    //         break
+    //       case '行政区划':
+    //         this.navActive = 12500
+    //         break
+    //       case '权限组管理':
+    //         this.navActive = 13000
+    //         break
+    //       case '用户管理':
+    //         this.navActive = 13500
+    //         break
+    //       case '企业信息':
+    //         this.navActive = 14000
+    //         break
+    //     }
+    //   } else if (flag === 2) {
+    //     switch (this.$route.name) {
+    //       case '原料批次管理':
+    //         this.navActive = 20500
+    //         break
+    //       case '辅料批次管理':
+    //         this.navActive = 21000
+    //         break
+    //       case '批次生产任务':
+    //         this.navActive = 21500
+    //         break
+    //       case '新增批次生产任务':
+    //         this.navActive = 21500
+    //         break
+    //       case '步骤1':
+    //         this.navActive = 21500
+    //         break
+    //       case '步骤2':
+    //         this.navActive = 21500
+    //         break
+    //       case '步骤3':
+    //         this.navActive = 21500
+    //         break
+    //       case '信息汇总':
+    //         this.navActive = 21500
+    //         break
+    //       case '产品信息':
+    //         this.navActive = 21500
+    //         break
+    //       case '生产批次信息':
+    //         this.navActive = 21500
+    //         break
+    //       case '批次投料信息':
+    //         this.navActive = 21500
+    //         break
+    //       case '批次生产任务信息':
+    //         this.navActive = 21500
+    //         break
+    //       case '抽检信息':
+    //         this.navActive = 21500
+    //         break
+    //       case '检验信息':
+    //         this.navActive = 21500
+    //         break
+    //       case '批次追溯查询':
+    //         this.navActive = 22000
+    //         break
+    //       case '码追溯查询':
+    //         this.navActive = 22500
+    //         break
+    //     }
+    //   } else if(flag===3) {
+    //     switch (this.$route.name) {
+    //       case '登录日志':
+    //         this.navActive = 30500
+    //         break
+    //       case '维护日志':
+    //         this.navActive = 31000
+    //         break
+    //     }
+    //   }
+    //
+    //   this.GLOBAL.listByUser.forEach((a, index)=>{
+    //     if(a.pkId === this.navActive) {
+    //       this.menuActive = index
+    //     }
+    //     a.child.forEach(b=>{
+    //       if(b.pkId === this.navActive) {
+    //         this.menuActive = index
+    //       }
+    //     })
+    //   })
+    // },
     menuStatusChange () {
       this.menuStatus = !this.menuStatus
       if (this.menuStatus) {
@@ -392,89 +353,62 @@ export default {
     },
     menuChange (data) {
       this.menuActive = data
+      console.log(data)
       switch (data) {
         case 0:
-          this.navActive = 0
+          this.navActive = 1
           this.$router.replace('/codeManagement')
           break
         case 1:
-          this.navActive = 11
+          this.navActive = 20500
           this.$router.replace('/materialsBatch')
           break
         case 2:
-          this.navActive = 16
+          this.navActive = 30500
           this.$router.replace('/loginLog')
+          break
+        case 4:
+          this.navActive = 40500
+          this.$router.replace('/production-stock')
+          break
+        case 5:
+          this.navActive = 50500
+          this.$router.replace('/production-report')
           break
       }
     },
-    navClick (index) {
+    navClick (index, flag, item, father) {
       this.navActive = index
-      if(index<2 || index > 5) {
-        this.secondShow = false
+      if(item.hasSecond) {
+        this.GLOBAL.listByUser[this.menuActive].child.forEach(item=>{
+          if(item.pkId === index && !item.secondShow) {
+            item.secondShow = true
+          } else {
+            item.secondShow = false
+          }
+        })
+        this.$forceUpdate()
+        return
+      } else if(father.hasSecond){
+        if(flag === 1) {
+          father.secondShow = false
+        }
+      } else {
+        this.GLOBAL.listByUser[this.menuActive].child.forEach(item=>{
+          if(item.hasSecond) {
+            item.secondShow = false
+          }
+        })
       }
-      switch (index) {
-        case 0:
-          this.$router.replace('/codeManagement')
-          break
-        case 1:
-          this.$router.replace('/productManagement')
-          break
-        case 2:
-          this.$router.replace('/materialInfo')
-          break
-        case 3:
-          this.$router.replace('/materialCompany')
-          break
-        case 4:
-          this.$router.replace('/auxiliaryInfo')
-          break
-        case 5:
-          this.$router.replace('/auxiliaryCompany')
-          break
-        case 6:
-          this.$router.replace('/productionLine')
-          break
-        case 7:
-          this.$router.replace('/administrativeDivision')
-          break
-        case 8:
-          this.$router.replace('/permissionManagement')
-          break
-        case 9:
-          this.$router.replace('/userManagement')
-          break
-        case 10:
-          this.$router.replace('/enterpriseInformation')
-          break
-        case 11:
-          this.$router.replace('/materialsBatch')
-          break
-        case 12:
-          this.$router.replace('/auxiliaryBatch')
-          break
-        case 13:
-          this.$router.replace('/batchProduction')
-          break
-        case 14:
-          this.$router.replace('/traceBack')
-          break
-        case 15:
-          this.$router.replace('/traceBackCode')
-          break
-        case 16:
-          this.$router.replace('/loginLog')
-          break
-        case 17:
-          this.$router.replace('/protectLog')
-          break
-      }
+      this.$forceUpdate()
+      this.$router.push(item.url)
     }
   }
 }
 </script>
 
 <style scoped lang="stylus">
-@import './media.styl'
+@import '../../assets/css/fn.styl'
 .fold-enter-active, .fold-leave-active {
     transition: all 0.5s;
 }
@@ -486,14 +420,12 @@ export default {
     background-color #496AC5
     position relative
     .left
-        /*float left*/
         position absolute
         left 0
         top 0
         width 17%
         height 100%
         transition all 0.5s
-        /*overflow hidden*/
         .top
             background-color #496AC5
             height 8%
@@ -514,34 +446,42 @@ export default {
             height 92%
             position relative
             .nav
-                display flex
-                align-items center
                 color #ffffff
                 width 100%
                 cursor pointer
-                height 8.7%
-                min-height 30px
-                padding-left 2.18em
                 user-select none
                 position relative
-                &.no-padding
-                    padding-left 0
-                &:hover
-                    color #203262
-                    background-color #EAEFF9
-                &.active
-                    color #203262
-                    background-color #EAEFF9
-                .text
-                    margin-left .727em
-                    letter-spacing 1px
-                .arrow
-                    margin-left .9em
+                .icon-wrap
+                    position relative
+                    width 100%
+                    height-set(60px, line-height)
+                    min-height 30px
+                    padding-left 2.18em
+                    &.no-padding
+                        padding-left 0
+                    &:hover
+                        /*color #203262*/
+                        background-color #5F7FD9
+                    &.active
+                        color #203262
+                        background-color #EAEFF9
+                    .text
+                        margin-left .727em
+                        letter-spacing 1px
+                        font-size-set(18px)
+                    i.icon-jiant
+                        margin-left .5em
+                        font-size-set(10px)
+                        display inline-block
+                        transition all .3s
+                        &.trans
+                            transform rotate(180deg)
                 .second
                     width 120px
                     background-color #203262
                     position absolute
                     right -128px
+                    top 0
                     z-index 10
                     border-radius 4px
                     padding 5px 0
@@ -562,40 +502,45 @@ export default {
                         &:hover {
                             color #5273CE
                         }
-            .special
-                li
-                    padding-left 30%
-                    color #ffffff
-                    position relative
-                    cursor pointer
-                    line-height 2.4em
-                    user-select none
-                    &:before
-                        content ''
-                        display block
-                        width 4px
-                        height 4px
-                        border-radius 50%
-                        background-color #ffffff
-                        position absolute
-                        left 25%
-                        top 50%
-                        transform translateY(-50%)
-                    &.active
-                        color #203262
-                        background-color #EAEFF9
+                .special
+                    li
+                        padding-left 30%
+                        color #ffffff
+                        position relative
+                        cursor pointer
+                        line-height 25px
+                        user-select none
+                        font-size-set(18px)
                         &:before
-                            background-color #203262
-            .version
-                width 100%
-                color #717DA2
-                font-size 12px
-                text-align center
-                position absolute
-                bottom 20px
-                left 0
+                            content ''
+                            display block
+                            width 4px
+                            height 4px
+                            border-radius 50%
+                            background-color #ffffff
+                            position absolute
+                            left 25%
+                            top 50%
+                            transform translateY(-50%)
+                        &.active
+                            color #203262
+                            background-color #EAEFF9 !important
+                            &:before
+                                background-color #203262
+                        &:hover
+                            /*color #203262*/
+                            background-color #5F7FD9
+                            &:before
+                                background-color #203262
+        .version
+            width 100%
+            color #717DA2
+            font-size 12px
+            text-align center
+            position absolute
+            bottom 20px
+            left 0
     .right
-        /*float left*/
         position absolute
         right 0
         top 0
@@ -618,6 +563,8 @@ export default {
                 display table\\9\\0
                 position relative
                 cursor pointer
+                font-size-set(22px)
+                width-set(192px, width)
                 &.active
                     background-color #5F7FD9
                     &:after
@@ -625,7 +572,7 @@ export default {
                         display block
                         width 100%
                         height 2px
-                        background-color #70DEC0
+                        background-color #5F7FD9
                         position absolute
                         bottom 0
                         left 0
@@ -638,6 +585,8 @@ export default {
             height 92%
             background-color #EAEFF9
             padding-top .5em
+            overflow auto
     .fold-wrap
         transition all .5s
+        overflow hidden
 </style>

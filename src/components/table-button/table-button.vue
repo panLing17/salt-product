@@ -28,6 +28,7 @@ export default {
 </script>
 
 <style scoped lang="stylus">
+    @import '../../assets/css/fn.styl'
     .table-button
         display inline-block
         box-sizing border-box
@@ -45,6 +46,7 @@ export default {
                 line-height 1
                 cursor pointer
                 user-select none
+                font-size-set(16px)
                 &.active
                     background-color #5F7FD9
                     color #fff

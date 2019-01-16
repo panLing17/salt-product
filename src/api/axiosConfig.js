@@ -12,11 +12,23 @@ axios.interceptors.request.use(function (config) {
       }
       if(config.data) {
         let formData = new FormData()
-        let temp = deepClone(config.data.reqParam)
-        let str = JSON.stringify(temp)
-        formData.append('reqParam', str)
-        formData.append('token', localStorage.getItem('token'))
-        config.data = formData
+        if(config.data.reqParam) {
+          let temp = deepClone(config.data.reqParam)
+          let str = JSON.stringify(temp)
+          formData.append('reqParam', str)
+          formData.append('token', localStorage.getItem('token'))
+          config.data = formData
+        } else{
+          console.log(config.data)
+          for(let i in config.data) {
+            if(Object.prototype.toString.call(config.data[i]) === '[object File]') {
+              formData.append(i, config.data[i])
+            }
+          }
+          formData.append('token', localStorage.getItem('token'))
+          config.data = formData
+        }
+
       }
     } else {
       Message('请先登录')
@@ -34,6 +46,7 @@ axios.interceptors.response.use(function (response) {
   if (response.data.retCode !== 1) {
     if (response.data.retCode === 1000) {
       Router.replace('/login')
+      Message.error(response.data.retMsg)
     } else {
       Message.error(response.data.retMsg)
     }

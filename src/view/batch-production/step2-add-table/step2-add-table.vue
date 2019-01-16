@@ -38,7 +38,7 @@
                     <span>*</span>
                 </td>
                 <td class="label-td">
-                    <label>投入量</label>
+                    <label>投入量(吨)</label>
                     <span>*</span>
                 </td>
                 <td class="label-td">
@@ -48,7 +48,7 @@
             </tr>
             <tr>
                 <td>
-                    <input type="text" v-model="params.materBatchId" readonly>
+                    <input type="text" v-model="showData.batchNo" readonly>
                 </td>
                 <td>
                     <input type="text" v-model="params.amount" @input="emitData">
@@ -111,7 +111,8 @@
         },
         showData: {
           materialName: '',
-          companyName: ''
+          companyName: '',
+          batchNo: ''
         },
         time: '',
         params: {
@@ -145,11 +146,13 @@
         })
       },
       select(val) {
+        console.log(val)
         this.params.masterType = val[0]
-        this.params.materBatchId = val[3]
+        this.params.materBatchId = val[3].pkId
         this.emitData()
         this.showData.materialName = val[1].name
         this.showData.companyName = val[2].name
+        this.showData.batchNo = val[3].name
       },
       handleItemChange(val) {
         if(val.toString().indexOf('13010') > -1 && !this.typeList[0].child.length) {
@@ -229,8 +232,11 @@
         }).then(res => {
           if(res.data.retCode === 1) {
             res.data.retVal.forEach(item => {
-              item.label = item.pkId
-              item.value = item.pkId
+              item.label = item.batchNo
+              item.value = {
+                name: item.batchNo,
+                pkId: item.pkId
+              }
             })
             this.typeList.forEach(a => {
               if(a.pkId == val[0]) {

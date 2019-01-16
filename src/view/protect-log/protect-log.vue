@@ -1,12 +1,12 @@
 <template>
     <div class="protect-log">
         <div class="top-card white-bg">
-            <div class="top-title view-title">查询</div>
+            <!--<div class="top-title view-title">查询</div>-->
             <div class="search-wrap">
                 <label class="fs_20">用户名称</label>
                 <input type="text" v-model="params.reqParam.userName">
                 <label class="fs_20">日志类型</label>
-                <el-select v-model="params.reqParam.logType" filterable placeholder="请选择">
+                <el-select v-model="params.reqParam.logType" filterable clearable placeholder="请选择">
                     <el-option
                             v-for="item in loginTypeList"
                             :key="item.pkId"
@@ -25,8 +25,8 @@
                         end-placeholder="结束日期"
                 >
                 </el-date-picker>
-                <l-button :style="{'margin': '0 1em 0 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="getData"></l-button>
-                <l-button buttonText="清空" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
+                <l-button v-if="btnPromise.search" :style="{'margin': '11px 1em 11px 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="search"></l-button>
+                <l-button buttonText="清空" :style="{'margin': '11px 0'}" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
             </div>
         </div>
         <div class="bottom-card white-bg">
@@ -73,6 +73,7 @@
                     :totalPage="data.total"
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
+                    :currentPage="params.reqParam.page"
             ></l-page>
         </div>
     </div>
@@ -102,7 +103,6 @@
     },
     created() {
       this.loginTypeList = this.GLOBAL.dictionaryData[300]
-      this.getData()
     },
     watch: {
       queryDate (newVal) {
@@ -132,7 +132,9 @@
           }
         })
       },
-      clear() {}
+      clear() {
+        this.params.reqParam.userName = ''
+      }
     }
   }
 </script>
@@ -151,9 +153,9 @@
                     height 28px
         .table-wrap
             width 94.38%
-            height 70%
+            /*height 70%*/
             margin 0 auto 0
-            overflow auto
+            /*overflow auto*/
             box-sizing border-box
 </style>
 <style lang="stylus">

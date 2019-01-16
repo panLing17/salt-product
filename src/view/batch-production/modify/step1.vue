@@ -1,6 +1,6 @@
 <template>
-    <div class="step1 fs_20">
-        <table class="label-table fs_20">
+    <div class="step1">
+        <table class="label-table">
             <colgroup width="20%"></colgroup>
             <colgroup width="20%"></colgroup>
             <colgroup width="20%"></colgroup>
@@ -19,14 +19,6 @@
                     <label>存储计量单位</label>
                     <span>*</span>
                 </td>
-                <td>
-                    <label>每托含量</label>
-                    <span>*</span>
-                </td>
-                <td>
-                    <label>申请人</label>
-                    <span>*</span>
-                </td>
             </tr>
             <tr>
                 <td>
@@ -36,13 +28,39 @@
                     <input type="text" v-model="data.plans">
                 </td>
                 <td>
-                    <input type="text" v-model="data.unit">
+                    <input type="text" v-model="data.unit" readonly>
                 </td>
+            </tr>
+            <tr>
+                <td>
+                    <label>每托含量</label>
+                    <span>*</span>
+                </td>
+                <td>
+                    <label>申请人</label>
+                    <span>*</span>
+                </td>
+                <td>
+                    <label>标码类型</label>
+                    <span>*</span>
+                </td>
+            </tr>
+            <tr>
                 <td>
                     <input type="text" v-model="data.tpRatio">
                 </td>
                 <td>
                     <input type="text" v-model="data.applicant">
+                </td>
+                <td>
+                    <el-select style="width: 100%" v-model="productCode" filterable clearable  placeholder="">
+                        <el-option
+                                v-for="item in productList"
+                                :key="item.productCode"
+                                :label="item.productName"
+                                :value="item.productCode">
+                        </el-option>
+                    </el-select>
                 </td>
             </tr>
             <tr>
@@ -53,7 +71,7 @@
             </tr>
             <tr>
                 <td colspan="5">
-                    <el-select v-model="productCode" filterable  placeholder="">
+                    <el-select v-model="productCode" filterable clearable  placeholder="">
                         <el-option
                                 v-for="item in productList"
                                 :key="item.productCode"
@@ -68,7 +86,7 @@
             <div class="img">
                 <img :src="product.imgs[0]?product.imgs[0].img:''"  @error="$method.imgError($event)" alt="">
             </div>
-            <table class="detail-table fs_20">
+            <table class="detail-table">
                 <colgroup width="10%"></colgroup>
                 <colgroup width="20%"></colgroup>
                 <colgroup width="10%"></colgroup>
@@ -177,6 +195,11 @@
           }
         }).then(res => {
           if(res.data.retCode === 1) {
+            res.data.retVal.forEach(item=>{
+              if(item.productCode===this.productCode) {
+                this.productCode = item.productName
+              }
+            })
             this.productList = res.data.retVal
           }
         })
@@ -200,7 +223,9 @@
         })
       },
       add() {
-        this.data.productCode = this.productCode
+        if(!isNaN(this.productCode)) {
+          this.data.productCode = this.productCode
+        }
         this.$http({
           url: this.$api + 'produce/production/pd/batch/update',
           method: 'post',
@@ -210,7 +235,7 @@
         }).then(res => {
           if(res.data.retCode === 1) {
             this.productList.forEach(item => {
-              if(item.productCode === this.productCode) {
+              if(item.productCode === this.data.productCode) {
                 this.data.productName = item.productName
               }
             })
@@ -231,6 +256,7 @@
                 td
                     color #414141
                     padding-left 1em
+                    font-size-set(16px)
                     &:nth-of-type(1)
                         padding-left 0
                     span
@@ -244,9 +270,9 @@
             margin-top 1em
             .img
                 float left
-                width 24.6%
+                width 20%
                 height 0
-                padding-bottom 24.6%
+                padding-bottom 20%
                 position relative
                 bakcground-color #E3E3E3
                 font-size 0
@@ -256,29 +282,30 @@
                     height 100%
             .detail-table
                 float right
-                width 75%
+                width 79%
                 border 1px solid #BFBFBF
                 table-layout fixed
                 border-collapse collapse
+                font-size-set(16px)
                 tr
                     border 1px solid #BFBFBF
                     td
-                        height 2em
-                        padding-left .2em
+                        padding 7px 5px
                         border 1px solid #BFBFBF
 
         .btn-wrap
             position relative
-            margin-top 1em
+            height 50px
 </style>
 <style lang="stylus">
     .step1
         .el-select
-            width 30%
+            width 33.3%
         .el-input__inner
             height 2em
             line-height 2em
             border-color #BFBFBF
+            color #414141
         .el-input__icon
             line-height 2em
 </style>

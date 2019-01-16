@@ -55,7 +55,7 @@
         height 100%
         .content-wrap
             width 98%
-            height 99%
+            min-height 99%
             background-color #ffffff
             margin 0 auto
             border-radius 6px

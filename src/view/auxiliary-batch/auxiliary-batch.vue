@@ -1,7 +1,7 @@
 <template>
     <div class="material-info">
         <div class="top-card white-bg">
-            <div class="top-title view-title">查询</div>
+            <!--<div class="top-title view-title">查询</div>-->
             <div class="search-wrap fs_20">
                 <label class="label-1">企业名称</label>
                 <el-select class="fs_20" filterable  clearable v-model="params.reqParam.factoryId" placeholder="">
@@ -23,14 +23,14 @@
                 </el-select>
                 <label class="label-2">出厂批号</label>
                 <input type="text" v-model="params.reqParam.batchNo">
-                <l-button :style="{'margin': '0 1em 0 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="getData"></l-button>
-                <l-button buttonText="清空" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
+                <l-button v-if="btnPromise.search" :style="{'margin': '11px 1em 11px 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="search"></l-button>
+                <l-button buttonText="清空" :style="{'margin': '11px 0'}" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
             </div>
         </div>
         <div class="bottom-card white-bg">
             <div class="view-title">
                 辅料基本信息列表
-                <div class="table-button-single fs_18" @click="addShow">
+                <div v-if="btnPromise.add" class="table-button-single fs_18" @click="addShow">
                     <i class="iconfont icon-xinz fs_16"></i>
                     <span>新增辅料批次任务</span>
                 </div>
@@ -68,24 +68,25 @@
                         <td class="td">{{item.cxt}}</td>
                         <td class="td">{{item.spec}}</td>
                         <td class="td">{{item.batchNo}}</td>
-                        <td class="td">{{item.prodDate}}</td>
+                        <td class="td">
+                            <el-tooltip :open-delay="300" :content="item.prodDate" placement="top">
+                                <span style="cursor: pointer">{{item.prodDate}}</span>
+                            </el-tooltip>
+                        </td>
                         <td class="td btn-wrap">
-                            <div class="btn" @click="getDetail(item, 0)">
+                            <div v-if="btnPromise.detail" class="btn" @click="getDetail(item, 0)">
                                 <i class="fs_18 iconfont icon-xiangq"></i>
                                 <span class="fs_18">详情</span>
                             </div>
-                            <div class="btn" @click.stop="openPop(index)">
-                                <i class="fs_18 iconfont icon-guanli"></i>
-                                <span class="fs_18">管理</span>
-                                <i class="fs_16 iconfont icon-jiant-x" style="margin-left: .2em"></i>
-                                <div class="pop-btn fs_20" v-show="item.btnPopShow">
-                                    <div class="sanjiao"></div>
-                                    <ul class="pop-list">
-                                        <li class="pop-item" @click="getDetail(item, 1)">修改</li>
-                                        <li class="pop-item" @click="del(index)">删除</li>
-                                    </ul>
-                                </div>
-                            </div>
+                            <el-dropdown trigger="click"  @command="handleChange">
+                                  <span class="el-dropdown-link">
+                                    <i class="iconfont icon-guanli"></i>管理<i class="fs_16 iconfont icon-jiant-x"></i>
+                                  </span>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item :command="{flag:0,index}" v-if="btnPromise.del">删除</el-dropdown-item>
+                                    <el-dropdown-item :command="{flag:1,item}" v-if="btnPromise.editor">修改</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </el-dropdown>
                         </td>
                     </tr>
                 </table>
@@ -94,6 +95,7 @@
                     :totalPage="data.total"
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
+                    :currentPage="params.reqParam.page"
             ></l-page>
         </div>
         <add ref="add" :companyData="companyData" :materialsData="materialsData"></add>
@@ -130,7 +132,6 @@
     created () {
       this.getCompanyData()
       this.getMaterialsData()
-      this.getData()
     },
     methods: {
       getCompanyData() {
@@ -221,6 +222,13 @@
             }
           )
         }).catch(() => {})
+      },
+      handleChange(data) {
+        if(data.flag === 0) {
+          this.del(data.index)
+        } else{
+          this.getDetail(data.item, data.flag)
+        }
       }
     },
     components: {
@@ -266,8 +274,8 @@
                 top -2em
         .table-wrap
             width 94%
-            height 70%
-            overflow auto
+            /*height 70%*/
+            /*overflow auto*/
             margin 0 auto
         .mask-content-wrap
             width 75%

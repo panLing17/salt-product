@@ -12,7 +12,7 @@
                 </div>
                 <div class="mask-content clear-float">
                     <div class="img">
-                        <img :src="data.report" @error="$method.imgError($event)" alt="">
+                        <img :src="data.report" @click="$method.magnifier(data.report)" @error="$method.imgError($event)" alt="">
                     </div>
                     <table class="mask-table">
                         <tr>
@@ -52,7 +52,7 @@
                     </table>
                 </div>
                 <div class="mask-btn-wrap fs_20">
-                    <l-button buttonText="删除" style="margin-right: .5em" @button-click="del"></l-button>
+                    <l-button v-if="btnPromise.delRandom && (data.status===94011 || data.status===94012 || data.status===94013)" buttonText="删除" style="margin-right: .5em" @button-click="del"></l-button>
                     <l-button buttonText="返回" @button-click="hide"></l-button>
                 </div>
             </div>
@@ -65,6 +65,9 @@
     name: 'random-check-detail',
     props: {
       data: {
+        type: Object
+      },
+      btnPromise: {
         type: Object
       }
     },

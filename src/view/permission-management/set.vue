@@ -204,27 +204,10 @@
           }
         }).then(res => {
             if (res.data.retCode === 1) {
-              this.$http({
-                url: this.$api + 'produce/resources/rs/users/listByGroup',
-                method: 'post',
-                data: {
-                  reqParam: {
-                    gId: this.data.pkId,
-                    retType: 2
-                  }
-                }
-              }).then(response => {
                 res.data.retVal.forEach(item => {
-                  response.data.retVal.forEach(r => {
-                    if (r.uId === item.uId) {
-                      item.selected = true
-                    }
-                  })
+                  item.selected = item.permission===40021?true:false
                 })
                 res.data.retVal.forEach((item, index) => {
-                  if (!item.selected) {
-                    item.selected = false
-                  }
                   this.personList['col' + index%4].push(item)
                 })
                 let arr = [0,1,2,3]
@@ -239,7 +222,6 @@
                     this.allSelected['col'+item] = true
                   }
                 })
-              })
             }
         })
       },

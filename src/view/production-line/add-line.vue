@@ -25,10 +25,10 @@
                                 <input type="text" v-model="shop.name">
                             </div>
                             <div class="col-3">
-                                <l-button buttonText="增加单元" @button-click="addUnit"></l-button>
+                                <l-button v-if="$parent.btnPromise.addUnit" buttonText="增加单元" @button-click="addUnit"></l-button>
                             </div>
                         </li>
-                        <unit @del-line-callback="delLineCallback" :id="1" @del-unit="delUnit" @unit-input="unitInput"></unit>
+                        <!--<unit @del-line-callback="delLineCallback" :id="1" @del-unit="delUnit" @unit-input="unitInput"></unit>-->
                     </ul>
                 </div>
                 <div class="mask-btn-wrap fs_20">
@@ -44,6 +44,9 @@
 <script>
   export default {
     name: 'addLine',
+    props: {
+      btnPromise: Object
+    },
     data () {
       return {
         addShow: false,
@@ -60,6 +63,7 @@
         this.addShow = true
       },
       hide () {
+        Object.assign(this.$data, this.$options.data())
         this.addShow = false
       },
       addUnit () {
@@ -69,7 +73,9 @@
           className: 'shop',
           delUnitFn: this.delUnit,
           unitInputFn: this.unitInput,
-          delLineCallback: this.delLineCallback
+          delLineCallback: this.delLineCallback,
+          btnPromise: this.btnPromise,
+          wType: 97010
         })
       },
       delUnit (id) {
@@ -85,16 +91,20 @@
         delete this.tempData[id]
       },
       right () {
+        if(!/^(\w){2}$/.test(this.shop.code)) {
+          this.$message.warning('车间编码只能是两位')
+          return
+        }
         let params = {
           reqParam: [
             {
-              workId: this.shop.code + '0000',
+              workId: this.shop.code.padEnd(6, '0'),
               shopName: this.shop.name,
-              shopCode: this.shop.code + '0000',
+              shopCode: this.shop.code.padEnd(6, '0'),
               unitName: '-',
-              unitCode: this.shop.code + '0000',
+              unitCode: this.shop.code.padEnd(6, '0'),
               lineName: '-',
-              lineCode: this.shop.code + '0000',
+              lineCode: this.shop.code.padEnd(6, '0'),
               used: this.$method.queryDictionaryForName.call(this, 'for1', '启用'),
               wType: this.$method.queryDictionaryForName.call(this, 970, '车间'),
               fid: '000000',
@@ -103,10 +113,16 @@
             }
           ]
         }
+        let flag = true
         for (let i in this.tempData) {
           let t = {}
           let str = i.substring(0, i.length-1)
           if (str === 'unitWrap') {
+            if(!/^(\w){2}$/.test(this.tempData[i].code)) {
+              flag = false
+              this.$message.warning('单元编码只能是两位')
+              return
+            }
             t.workId = this.shop.code + this.tempData[i].code + '00'
             t.shopName = this.shop.name
             t.shopCode = this.shop.code + this.tempData[i].code + '00'
@@ -120,8 +136,13 @@
             t.lineChage = ''
             t.fullName = this.shop.name + this.tempData[i].name
             params.reqParam.push(t)
-          } else if (str === 'lineWrap'){
+          } else {
             let preId = this.tempData[i].preId
+            if(!/^(\w){2}$/.test(this.tempData[i].code)) {
+              flag = false
+              this.$message.warning('产线编码只能是两位')
+              return
+            }
             t.workId = this.shop.code + this.tempData['unitWrap' + preId].code + this.tempData[i].code
             t.shopName = this.shop.name
             t.shopCode = this.shop.code + this.tempData['unitWrap' + preId].code + this.tempData[i].code
@@ -131,13 +152,15 @@
             t.lineCode = this.shop.code + this.tempData['unitWrap' + preId].code + this.tempData[i].code
             t.used = this.$method.queryDictionaryForName.call(this, 'for1', '启用')
             t.wType = this.$method.queryDictionaryForName.call(this, 970, '产线')
-            t.fid = this.shop.code + this.tempData['unitWrap' + preId].code + this.tempData[i].code
+            t.fid = this.shop.code + this.tempData['unitWrap' + preId].code + '00'
             t.lineChage = this.tempData[i].person
             t.fullName = this.shop.name + this.tempData['unitWrap' + preId].name + this.tempData[i].name
             params.reqParam.push(t)
           }
         }
-        this.addAjax(params)
+        if(flag) {
+          this.addAjax(params)
+        }
       },
       addAjax (params) {
         this.$http({
@@ -148,8 +171,9 @@
           }
         }).then(res => {
           if (res.data.retCode === 1) {
+            this.$parent.params.reqParam.page = 1
             this.$parent.getData()
-            this.addShow = false
+            this.hide()
             this.$message.success('新增成功')
           }
         })
@@ -161,6 +185,7 @@
 <style scoped lang="stylus">
     .mask-content-wrap
         width 80%
+        min-width 990px
         top 10%
         .mask-content
             width 93%

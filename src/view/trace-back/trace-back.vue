@@ -1,7 +1,7 @@
 <template>
     <div class="trace-back">
         <div class="top-card white-bg">
-            <div class="top-title view-title">查询</div>
+            <!--<div class="top-title view-title">查询</div>-->
             <div class="search-wrap fs_20">
                 <label class="label-1">产品名称</label>
                 <el-select v-model="search.reqParam.productCode" filterable  clearable placeholder="">
@@ -12,10 +12,10 @@
                             :value="item.productCode">
                     </el-option>
                 </el-select>
-                <label class="label-2">生产批号</label>
+                <label class="label-2"><span style="color: #D91C1C;margin-right: 5px">*</span>生产批号</label>
                 <input type="text" v-model="search.reqParam.batch">
-                <l-button :style="{'margin': '0 1em 0 2.5em'}" buttonText="查询" @button-click="getTraceList" iconName="iconfont icon-chaxx"></l-button>
-                <l-button buttonText="清空" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
+                <l-button v-if="btnPromise.search" :style="{'margin': '11px 1em 11px 2.5em'}" buttonText="查询" @button-click="getTraceList" iconName="iconfont icon-chaxx"></l-button>
+                <l-button buttonText="清空" :style="{'margin': '11px 0'}" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
             </div>
         </div>
         <div class="bottom-card white-bg fs_20">
@@ -96,14 +96,14 @@
             </div>
             <div class="tab-content clear-float" v-show="tabItemActive===0">
                 <div class="img">
-                    <img :src="product.imgs[0]?product.imgs[0].img:''" @error="$method.imgError($event)" alt="">
+                    <img :src="product.imgs[0]?product.imgs[0].img:''" @click="$method.magnifier(product.imgs[0]?product.imgs[0].img:'')" @error="$method.imgError($event)" alt="">
                 </div>
                 <table class="table right">
                     <tr class="tr">
                         <td class="td">产品编码</td>
                         <td class="td">{{product.productCode}}</td>
                         <td class="td">生产批号</td>
-                        <td class="td">{{data[itemActive]?data[itemActive].batch:''}}</td>
+                        <td class="td">{{searchList[itemActive]?searchList[itemActive].batch:''}}</td>
                     </tr>
                     <tr class="tr">
                         <td class="td">产品名称</td>
@@ -125,9 +125,9 @@
                     </tr>
                     <tr class="tr">
                         <td class="td">计划产量</td>
-                        <td class="td">{{data[itemActive]?data[itemActive].plans:''}}</td>
+                        <td class="td">{{searchList[itemActive]?searchList[itemActive].plans:''}}</td>
                         <td class="td">实际产量</td>
-                        <td class="td">{{data[itemActive]?data[itemActive].weight:''}}</td>
+                        <td class="td">{{searchList[itemActive]?searchList[itemActive].weight:''}}</td>
                     </tr>
                     <tr class="tr">
                         <td class="td">保质期</td>
@@ -195,7 +195,7 @@
                         <td class="td">{{item.amount}}</td>
                         <td class="td">{{item.place}}</td>
                         <td class="td">{{item.feedUser}}</td>
-                        <td class="td">{{item.feedTime}}</td>
+                        <td class="td" style="overflow: hidden">{{item.feedTime}}</td>
                     </tr>
                 </table>
             </div>
@@ -223,7 +223,7 @@
             </div>
             <div class="tab-content clear-float" v-show="tabItemActive===4">
                 <div class="img">
-                    <img :src="random.report" @error="$method.imgError($event)" alt="">
+                    <img :src="random.report" @click="$method.magnifier(random.report)" @error="$method.imgError($event)" alt="">
                 </div>
                 <table class="table right">
                     <tr class="tr">
@@ -264,7 +264,7 @@
             </div>
             <div class="tab-content clear-float" v-show="tabItemActive===5">
                 <div class="img">
-                    <img :src="check.report" @error="$method.imgError($event)" alt="">
+                    <img :src="check.report" @click="$method.magnifier(check.report)" @error="$method.imgError($event)" alt="">
                 </div>
                 <table class="table right">
                     <tr class="tr">
@@ -321,10 +321,11 @@
                     </table>
                 </div>
                 <l-page
-                        :totalPage="data.total"
-                        @size-change="handleSizeChange"
-                        @current-change="handleCurrentChange"
-                ></l-page>
+                    :totalPage="data.total"
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :currentPage="params.reqParam.page"
+            ></l-page>
             </div>
         </div>
     </div>
@@ -367,7 +368,7 @@
     },
     watch: {
       itemActive(newVal) {
-        if(newVal>-1) {
+        if(newVal>-1 && this.btnPromise.detail) {
           this.getInfo()
         }
       }
@@ -395,6 +396,10 @@
         this.search.reqParam.batch = ''
       },
       getTraceList() {
+        if(this.search.reqParam.batch.length === 0) {
+          this.$message.warning('请输入批号')
+          return
+        }
         this.$http({
           url: this.$api + 'produce/production/trace/batch/list',
           method: 'post',
@@ -407,6 +412,17 @@
             this.searchList = res.data.retVal
             if(this.searchList.length>0) {
               this.itemActive = 0
+            } else {
+              this.itemActive = -1
+              this.product = {
+                imgs:[]
+              }
+              this.batch = {}
+              this.feeds = []
+              this.tasks = []
+              this.random = {}
+              this.check = {}
+              this.data = {}
             }
           }
         })

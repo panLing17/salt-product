@@ -24,6 +24,9 @@
             <div class="information-content">
                 <router-view :currentDetail="currentDetail"></router-view>
             </div>
+            <div class="back">
+                <l-button buttonText="返回" @button-click="back"></l-button>
+            </div>
         </div>
     </div>
 </template>
@@ -44,24 +47,29 @@
       tabItemActive(newVal) {
         switch (newVal) {
           case 0:
-            this.$router.replace('/information/product')
+            this.$router.replace({path: '/information/product', query: {page: this.$route.query.page}})
             break
           case 1:
-            this.$router.replace('/information/batch')
+            this.$router.replace({path: '/information/batch', query: {page: this.$route.query.page}})
             break
           case 2:
-            this.$router.replace('/information/putting')
+            this.$router.replace({path: '/information/putting', query: {page: this.$route.query.page}})
             break
           case 3:
-            this.$router.replace('/information/task')
+            this.$router.replace({path: '/information/task', query: {page: this.$route.query.page}})
             break
           case 4:
-            this.$router.replace('/information/random')
+            this.$router.replace({path: '/information/random', query: {page: this.$route.query.page}})
             break
           case 5:
-            this.$router.replace('/information/check')
+            this.$router.replace({path: '/information/check', query: {page: this.$route.query.page}})
             break
         }
+      }
+    },
+    methods: {
+      back() {
+        this.$router.push({path: '/batchProduction', query: {page: this.$route.query.page}})
       }
     }
   }
@@ -78,6 +86,7 @@
             margin 0 auto
             border-radius 6px
             border 1px solid #D5D5D5
+            position relative
             .tab-wrap
                 color #414141
                 width 93%
@@ -120,4 +129,11 @@
                 padding-top 1em
                 width 93%
                 margin 0 auto
+            .back
+                width 93%
+                position absolute
+                bottom 50px
+                left 50%
+                text-align right
+                transform translateX(-50%)
 </style>

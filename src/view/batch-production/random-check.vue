@@ -80,7 +80,7 @@
                         </tr>
                         <tr>
                             <td class="label-td">
-                                <label>检验依据</label>
+                                <label>批准人</label>
                                 <span>*</span>
                             </td>
                             <td class="label-td">
@@ -90,7 +90,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <input type="text" v-model="params.reqParam.tsBase">
+                                <input type="text" v-model="params.reqParam.approver">
                             </td>
                             <td>
                                 <input type="text" v-model="params.reqParam.tsResult">
@@ -108,7 +108,19 @@
                         </tr>
                         <tr>
                             <td>
-                                <input type="text" v-model="params.reqParam.tsJudge">
+                                <el-select
+                                        v-model="params.reqParam.tsJudge"
+                                        filterable
+                                        allow-create
+                                        default-first-option
+                                        placeholder="">
+                                    <el-option
+                                            v-for="item in options1"
+                                            :key="item.label"
+                                            :label="item.label"
+                                            :value="item.label">
+                                    </el-option>
+                                </el-select>
                             </td>
                             <td>
                                 <input type="text" v-model="params.reqParam.inspector">
@@ -120,8 +132,7 @@
                                 <span>*</span>
                             </td>
                             <td class="label-td">
-                                <label>批准人</label>
-                                <span>*</span>
+
                             </td>
                         </tr>
                         <tr>
@@ -129,7 +140,31 @@
                                 <input type="text" v-model="params.reqParam.reviewer">
                             </td>
                             <td>
-                                <input type="text" v-model="params.reqParam.approver">
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label-td" colspan="2">
+                                <label>检验依据</label>
+                                <span>*</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <el-select
+                                        v-model="tsBase"
+                                        multiple
+                                        filterable
+                                        allow-create
+                                        default-first-option
+                                        placeholder="">
+                                    <el-option
+                                            v-for="item in options"
+                                            :key="item.label"
+                                            :label="item.label"
+                                            :value="item.label">
+                                    </el-option>
+                                </el-select>
                             </td>
                         </tr>
                     </table>
@@ -147,6 +182,7 @@
                                 :limit="1"
                                 :on-exceed="uploadExceed"
                                 :http-request="uploadImg1"
+                                :before-upload="beforeAvatarUpload"
                         >
                             <i class="el-icon-plus"></i>
                         </el-upload>
@@ -192,7 +228,17 @@
             reportDate: '',
             report: ''
           }
-        }
+        },
+        tsBase: [],
+        options: [{
+          label: 'NY/T 1040-2012'
+        }],
+        options1: [{
+          label: '合格'
+        },
+          {
+            label: '不合格'
+          }]
       }
     },
     watch: {
@@ -200,6 +246,9 @@
         if(newVal) {
           this.params.reqParam.batchPkId = this.data.pkId
         }
+      },
+      tsBase(val) {
+        this.params.reqParam.tsBase = val.join(',')
       }
     },
     mounted() {
@@ -214,10 +263,19 @@
         this.maskShow = false
       },
       uploadImg1(file) {
+        let _this = this
         if (file) {
-          this.fileReader.readAsDataURL(file.file)
-          this.fileReader.onload = () => {
-            this.params.reqParam.report = this.fileReader.result
+          if(file.file.size/1024 > 1025) { //大于1M，进行压缩上传
+            this.$method.photoCompress(file.file, {
+              quality: 0.5
+            }, function(base64Codes){
+              _this.params.reqParam.report = base64Codes
+            })
+          }else{ //小于等于1M 原图上传
+            this.fileReader.readAsDataURL(file.file)
+            this.fileReader.onload = () => {
+              this.params.reqParam.report = this.fileReader.result
+            }
           }
         }
       },
@@ -226,6 +284,13 @@
       },
       uploadExceed() {
         this.$message.warning('最多上传1张图片')
+      },
+      beforeAvatarUpload(file) {
+        const isLt2M = file.size / 1024 / 1024 < 5;
+        if (!isLt2M) {
+          this.$message.error('上传头像图片大小不能超过 5MB!');
+        }
+        return isLt2M;
       },
       right() {
         let t = this.sDate
@@ -240,9 +305,35 @@
         if(typeof t !== 'string') {
           this.params.reqParam.reportDate = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate()
         }
-        console.log(this.params.reqParam)
-        if(this.$method.isNullFn(this.params.reqParam)) {
-          this.$message.warning('数据不能为空')
+
+        if(!this.$method.check(this.params.reqParam, {
+          billCode: '检验单号',
+          sDate: '取样日期',
+          sUser: '取样人',
+          aDate: '收样日期',
+          aUser: '收样人',
+          tsBase: '检测依据',
+          tsResult: '检验结果',
+          tsJudge: '检验判定',
+          inspector: '检验人',
+          reviewer: '审核人',
+          approver: '批准人',
+          reportDate: '报告日期',
+          report: '检验报告图片'
+        }, {
+          billCode: 50,
+          sDate: 10,
+          sUser: 50,
+          aDate: 10,
+          aUser: 50,
+          tsBase: 50,
+          tsResult: 100,
+          tsJudge: 10,
+          inspector: 50,
+          reviewer: 50,
+          approver: 50,
+          reportDate: 10
+        })) {
           return
         }
         this.$http({
@@ -300,6 +391,7 @@
         .el-input__inner
             height 2em
             line-height 2em
+            cursor auto
         .el-input__icon
             line-height 2em
 </style>

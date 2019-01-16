@@ -24,11 +24,13 @@ import Method from './assets/js/method'
 import Unit from './view/production-line/unit/unit.js'
 import Line from './view/production-line/line/line.js'
 import Step2AddTable from './view/batch-production/step2-add-table/index'
+import LMagnifier from './components/l-magnifier/index'
 
 Vue.use(ElementUI)
 Vue.use(Unit)
 Vue.use(Line)
 Vue.use(Step2AddTable)
+Vue.use(LMagnifier)
 Vue.prototype.$http = axios
 Vue.prototype.GLOBAL = _global
 Vue.prototype.$method = Method

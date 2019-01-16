@@ -64,7 +64,9 @@
 
 <style scoped lang="stylus">
     .table
+        table-layout auto
         .tr
             .td
-                height 2.6em
+                padding .5em
+                white-space normal
 </style>

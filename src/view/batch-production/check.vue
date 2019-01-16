@@ -36,7 +36,7 @@
                         </tr>
                         <tr>
                             <td class="label-td">
-                                <label>检验方法</label>
+                                <label>批准人</label>
                                 <span>*</span>
                             </td>
                             <td class="label-td">
@@ -46,10 +46,22 @@
                         </tr>
                         <tr>
                             <td>
-                                <input type="text" v-model="params.reqParam.tsMethod">
+                                <input type="text" v-model="params.reqParam.approver">
                             </td>
                             <td>
-                                <input type="text" v-model="params.reqParam.tsJudge">
+                                <el-select
+                                        v-model="params.reqParam.tsJudge"
+                                        filterable
+                                        allow-create
+                                        default-first-option
+                                        placeholder="">
+                                    <el-option
+                                            v-for="item in options1"
+                                            :key="item.label"
+                                            :label="item.label"
+                                            :value="item.label">
+                                    </el-option>
+                                </el-select>
                             </td>
                         </tr>
                         <tr>
@@ -102,8 +114,7 @@
                                 <span>*</span>
                             </td>
                             <td class="label-td">
-                                <label>批准人</label>
-                                <span>*</span>
+
                             </td>
                         </tr>
                         <tr>
@@ -111,7 +122,31 @@
                                 <input type="text" v-model="params.reqParam.reviewer">
                             </td>
                             <td>
-                                <input type="text" v-model="params.reqParam.approver">
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label-td" colspan="2">
+                                <label>检验方法</label>
+                                <span>*</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <el-select
+                                        v-model="tsMethod"
+                                        multiple
+                                        filterable
+                                        allow-create
+                                        default-first-option
+                                        placeholder="">
+                                    <el-option
+                                            v-for="item in options"
+                                            :key="item.label"
+                                            :label="item.label"
+                                            :value="item.label">
+                                    </el-option>
+                                </el-select>
                             </td>
                         </tr>
                     </table>
@@ -129,6 +164,7 @@
                                 :limit="1"
                                 :on-exceed="uploadExceed"
                                 :http-request="uploadImg1"
+                                :before-upload="beforeAvatarUpload"
                         >
                             <i class="el-icon-plus"></i>
                         </el-upload>
@@ -170,7 +206,23 @@
             reportDate: '',
             report: ''
           }
-        }
+        },
+        options: [{
+          label: 'GB/T 13025.1'
+        }, {
+          label: 'GB/T 13025.2'
+        }, {
+          label: 'GB/T 13025.3'
+        }, {
+          label: 'GB/T 5009.42'
+        }],
+        tsMethod: [],
+        options1: [{
+          label: '合格'
+        },
+          {
+            label: '不合格'
+          }]
       }
     },
     watch: {
@@ -178,6 +230,9 @@
         if(newVal) {
           this.params.reqParam.batchPkId = this.data.pkId
         }
+      },
+      tsMethod(val) {
+        this.params.reqParam.tsMethod = val.join(',')
       }
     },
     mounted() {
@@ -192,12 +247,28 @@
         this.maskShow = false
       },
       uploadImg1(file) {
+        let _this = this
         if (file) {
-          this.fileReader.readAsDataURL(file.file)
-          this.fileReader.onload = () => {
-            this.params.reqParam.report = this.fileReader.result
+          if(file.file.size/1024 > 1025) { //大于1M，进行压缩上传
+            this.$method.photoCompress(file.file, {
+              quality: 0.5
+            }, function(base64Codes){
+              _this.params.reqParam.report = base64Codes
+            })
+          }else{ //小于等于1M 原图上传
+            this.fileReader.readAsDataURL(file.file)
+            this.fileReader.onload = () => {
+              this.params.reqParam.report = this.fileReader.result
+            }
           }
         }
+      },
+      beforeAvatarUpload(file) {
+        const isLt2M = file.size / 1024 / 1024 < 5;
+        if (!isLt2M) {
+          this.$message.error('上传头像图片大小不能超过 5MB!');
+        }
+        return isLt2M;
       },
       handleRemove1() {
         this.params.reqParam.report = ''
@@ -210,8 +281,30 @@
         if(typeof t !== 'string') {
           this.params.reqParam.reportDate = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate()
         }
-        if(this.$method.isNullFn(this.params.reqParam)) {
-          this.$message.warning('数据不能为空')
+        if(!this.$method.check(this.params.reqParam, {
+          billCode: '检验单号',
+          tsBase: '检测依据',
+          tsMethod: '检验方法',
+          tsEqm: '检验设备',
+          tsResult: '检验结果',
+          tsJudge: '检验判定',
+          inspector:'检验人',
+          reviewer:'审核人',
+          approver: '批准人',
+          reportDate: '报告日期',
+          report:'检验报告图片'
+        }, {
+          billCode: 50,
+          tsBase: 50,
+          tsMethod: 100,
+          tsEqm: 100,
+          tsResult: 100,
+          tsJudge: 10,
+          inspector: 50,
+          reviewer: 50,
+          approver: 50,
+          reportDate: 10
+        })) {
           return
         }
         this.$http({
@@ -251,6 +344,7 @@
                             height 2em
                             border 1px solid #BFBFBF
                             border-radius 4px
+                            padding 0 15px
                         &.label-td
                             padding-top .5em
             .upload
@@ -269,6 +363,10 @@
         .el-input__inner
             height 2em
             line-height 2em
+            border-color #bfbfbf
+            cursor auto
         .el-input__icon
             line-height 2em
+        .el-select
+            width 100%
 </style>

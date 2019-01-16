@@ -107,8 +107,10 @@
                             <span class="fs_18" style="margin-left: .2em;color: #BFBFBF">最多上传1张照片，每张照片不超过5M</span>
                         </div>
                         <div class="img-upload" v-show="imgShow1 && data.factoryInspReport">
-                            <i class="fs_18 iconfont icon-qingk" @click="imgShow1=false"></i>
-                            <img :src="data.factoryInspReport" alt="">
+                            <div class="icon-bar">
+                                <i class="fs_18 iconfont icon-qingk" @click="imgShow1=false"></i>
+                            </div>
+                            <img :src="data.factoryInspReport" @click="$method.magnifier(data.factoryInspReport)" alt="">
                         </div>
                         <el-upload
                                 v-show="!imgShow1 || !data.factoryInspReport"
@@ -130,8 +132,10 @@
                             <span class="fs_18" style="margin-left: .2em;color: #BFBFBF">最多上传1张照片，每张照片不超过5M</span>
                         </div>
                         <div class="img-upload" v-show="imgShow2 && data.accepetInspReport">
-                            <i class="fs_18 iconfont icon-qingk" @click="imgShow2=false"></i>
-                            <img :src="data.accepetInspReport" alt="">
+                            <div class="icon-bar">
+                                <i class="fs_18 iconfont icon-qingk" @click="imgShow2=false"></i>
+                            </div>
+                            <img :src="data.accepetInspReport" @click="$method.magnifier(data.accepetInspReport)" alt="">
                         </div>
                         <el-upload
                                 v-show="!imgShow2 || !data.accepetInspReport"
@@ -187,10 +191,19 @@
         this.maskShow = false
       },
       uploadImg1(file) {
+        let _this = this
         if (file) {
-          this.fileReader.readAsDataURL(file.file)
-          this.fileReader.onload = () => {
-            this.data.factoryInspReport = this.fileReader.result
+          if(file.file.size/1024 > 1025) { //大于1M，进行压缩上传
+            this.$method.photoCompress(file.file, {
+              quality: 0.5
+            }, function(base64Codes){
+              _this.data.factoryInspReport = base64Codes
+            })
+          }else{ //小于等于1M 原图上传
+            this.fileReader.readAsDataURL(file.file)
+            this.fileReader.onload = () => {
+              this.data.factoryInspReport = this.fileReader.result
+            }
           }
         }
       },
@@ -198,10 +211,19 @@
         this.data.factoryInspReport = ''
       },
       uploadImg2(file) {
+        let _this = this
         if (file) {
-          this.fileReader.readAsDataURL(file.file)
-          this.fileReader.onload = () => {
-            this.data.accepetInspReport = this.fileReader.result
+          if(file.file.size/1024 > 1025) { //大于1M，进行压缩上传
+            this.$method.photoCompress(file.file, {
+              quality: 0.5
+            }, function(base64Codes){
+              _this.data.accepetInspReport = base64Codes
+            })
+          }else{ //小于等于1M 原图上传
+            this.fileReader.readAsDataURL(file.file)
+            this.fileReader.onload = () => {
+              this.data.accepetInspReport = this.fileReader.result
+            }
           }
         }
       },
@@ -213,7 +235,6 @@
       },
       right () {
         let t = this.data.prodDate
-        console.log(t)
         if(typeof t !== 'string') {
           this.data.prodDate = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate()
         }
@@ -236,6 +257,7 @@
 </script>
 
 <style scoped lang="stylus">
+    @import '../../assets/css/fn.styl'
     .mask-content-wrap
         width 75%
         top 7%
@@ -285,14 +307,22 @@
                     width 25%
                     font-size 0
                     position relative
-                    i
+                    .icon-bar
                         position absolute
-                        padding 1em
-                        right 0
-                        top 0
+                        width 100%
+                        bottom 0
+                        left 0
                         z-index 2
-                        color #BFBFBF
+                        background-color rgba(0,0,0,.5)
+                        text-align right
+                    i
+                        padding 0 10px
+                        height-set(40px, line-height)
+                        font-size-set(20px)
+                        color rgba(255,255,255,.5)
                         cursor pointer
+                        &:hover
+                            color #ffffff
                     img
                         width 100%
         .mask-btn-wrap

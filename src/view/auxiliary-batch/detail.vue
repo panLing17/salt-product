@@ -77,7 +77,7 @@
                             <label>出厂检验报告</label>
                         </div>
                         <div class="img-upload">
-                            <img :src="data.factoryInspReport" alt="">
+                            <img :src="data.factoryInspReport" @click="$method.magnifier(data.factoryInspReport)" alt="">
                         </div>
                     </div>
                     <div class="upload">
@@ -85,7 +85,7 @@
                             <label>验收检验报告</label>
                         </div>
                         <div class="img-upload">
-                            <img :src="data.accepetInspReport" alt="">
+                            <img :src="data.accepetInspReport" @click="$method.magnifier(data.accepetInspReport)" alt="">
                         </div>
                     </div>
                 </div>
@@ -119,7 +119,7 @@
         this.maskShow = false
       },
       right () {
-        console.log(this.fileList)
+
       }
     }
   }

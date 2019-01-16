@@ -32,7 +32,8 @@
                         <tr v-for="(item, index) in data" :key="index">
                             <td class="center" @click="itemCheck(index)">
                                 <i class="iconfont"
-                                   :class="{'icon-dianxuan-1': !item.selected, 'icon-dianxuan-': item.selected}"
+                                   :class="{'icon-dianxuan-1': !item.selected,
+                                   'icon-dianxuan-': item.selected}"
                                    :style="{color: item.selected?'#5F7FD9':'#707070'}"
                                 ></i>
                             </td>

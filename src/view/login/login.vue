@@ -3,9 +3,9 @@
         <div class="header">
             <div class="wrap">
                 <div class="img">
-                    <img class="fs_29" src="./logo.png">
+                    <img class="fs_29" src="./logo1.png" style="width: 1.5em">
                 </div>
-                <div class="title fs_29">食盐安全追溯生产管理系统</div>
+                <div class="title fs_29">江苏省食盐安全追溯生产管理系统</div>
             </div>
         </div>
         <div class="content">
@@ -31,20 +31,18 @@
                 <div class="block">
                     <div class="block-title fs_28">技术支持</div>
                     <p>江苏瑞德信息产业有限公司</p>
-                    <p>全国统一客服：4008808919</p>
+                    <p></p>
                     <p>邮箱：info@redinfo.cn</p>
                 </div>
                 <div class="block" style="margin-left: 2em">
-                    <div class="block-title fs_28">方案咨询</div>
-                    <p>热线：025-85582726</p>
-                    <p>邮箱：syqgyxzx666@163.com</p>
+                    <div class="block-title fs_28">&nbsp;</div>
+                    <p>全国统一客服：4008808919</p>
                 </div>
-                <div class="img" style="margin-left: 2em">
+                <div class="img" style="margin-left: 5em">
                     <img src="./3.png" style="height: 10.55em">
                 </div>
                 <div class="img" style="margin-left: 2em">
-                    <img src="./4.png" style="width: 7.2em">
-                    <div class="text">联系我们</div>
+                    <img src="./5.png" style="width: 12em">
                 </div>
             </div>
         </div>
@@ -62,6 +60,13 @@
           passwd: ''
         }
       }
+    },
+    created() {
+      localStorage.clear()
+      this.GLOBAL.listByUser = []
+      this.GLOBAL.dictionaryData = {}
+      this.GLOBAL.areaList = {}
+      this.GLOBAL.count = 0
     },
     methods: {
       login() {
@@ -197,11 +202,15 @@
             height 29%
             background-color #ffffff
             position relative
+            overflow hidden
             .wrap
-                position absolute
+                /*position absolute
                 left 50%
                 top 50%
-                transform translate(-50%, -50%)
+                transform translate(-50%, -50%)*/
+                width 50em
+                height 60%
+                margin 30px auto 0
                 .block
                     float left
                     position relative

@@ -59,22 +59,21 @@
                 </table>
             </div>
             <div class="button-wrap fs_20">
-                <div class="table-button-single" @click="sync">同步企业信息</div>
+                <div class="table-button-single" v-if="btnPromise.sync" @click="sync">同步企业信息</div>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+  import {pageCallback} from '@/assets/js/mixin'
   export default {
     name: 'enterprise-information',
+    mixins: [pageCallback],
     data() {
       return {
         data: {}
       }
-    },
-    created () {
-      this.getData()
     },
     methods: {
       getData() {
@@ -95,6 +94,7 @@
           data: {}
         }).then(res => {
           if (res.data.retCode === 1) {
+            this.$message.success('同步成功')
             this.getData()
           }
         })

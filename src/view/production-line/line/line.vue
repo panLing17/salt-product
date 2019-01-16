@@ -6,7 +6,7 @@
                 <div class="line-col-1">
                         <span>*</span>
                         <label>产线编码</label>
-                    <input type="text" v-model="line.code" @input="lineInput">
+                    <input type="text" :disabled="lineBack" :style="{'background-color': lineBack?'#d0d0d0':''}" v-model="line.code" @input="lineInput">
                 </div>
                 <div class="line-col-2">
                         <span>*</span>
@@ -17,7 +17,7 @@
                     <input type="text" v-model="line.person" @input="lineInput">
                 </div>
                 <div class="line-col-3">
-                    <l-button buttonText="删除产线" @button-click="delLine"></l-button>
+                    <l-button buttonText="删除产线" :bgColor="lineBack?'#d0d0d0':'#5273CE'" @button-click="delLine"></l-button>
                 </div>
             </li>
         </ul>
@@ -39,6 +39,9 @@
       },
       preId: {
         type: Number
+      },
+      lineBack: {
+        type: Object
       }
     },
     data () {
@@ -54,6 +57,7 @@
     },
     created () {
       this.show()
+      this.initData()
     },
     methods: {
       show () {
@@ -62,13 +66,23 @@
       hide () {
         this.unitShow = false
       },
+      initData() {
+        if(typeof this.lineBack !== 'undefined') {
+          this.line.code = this.lineBack.workId
+          this.line.name = this.lineBack.lineName
+          this.line.person = this.lineBack.lineChage
+        }
+      },
       delLine () {
+        if(typeof this.lineBack !== 'undefined') {
+          return
+        }
         this.delLineFn('lineWrap' + this.id)
         this.$destroy()
       },
       lineInput () {
         this.lineInputFn({
-          id: 'lineWrap' + this.id,
+          id: this.preId + 'lineWrap' + this.id,
           value: this.line
         })
       }

@@ -2,8 +2,8 @@
     <div class="add-batch">
         <div class="content-wrap">
             <div class="view-title">
-                新增批次任务
-                <div class="fs_18">批次生产任务>新增批次任务</div>
+                修改批次任务
+                <div class="fs_18">批次生产任务>修改批次任务</div>
             </div>
             <div class="steps fs_20 clear-float">
                 <div class="step-1" :class="{active: stepActive===0}">1.生产批次信息</div>
@@ -55,7 +55,7 @@
         height 100%
         .content-wrap
             width 98%
-            height 99%
+            min-height 99%
             background-color #ffffff
             margin 0 auto
             border-radius 6px

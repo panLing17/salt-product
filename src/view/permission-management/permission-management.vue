@@ -1,18 +1,18 @@
 <template>
     <div class="permission-management">
         <div class="top-card white-bg">
-            <div class="top-title view-title">查询</div>
+            <!--<div class="top-title view-title">查询</div>-->
             <div class="search-wrap fs_20">
                 <label class="label-1">权限组名称</label>
                 <input type="text" v-model="params.reqParam.gName">
-                <l-button :style="{'margin': '0 1em 0 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="getData"></l-button>
-                <l-button buttonText="清空" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
+                <l-button v-if="btnPromise.search" :style="{'margin': '11px 1em 11px 2.5em'}" buttonText="查询" iconName="iconfont icon-chaxx" @button-click="search"></l-button>
+                <l-button buttonText="清空" :style="{'margin': '11px 0'}" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
             </div>
         </div>
         <div class="bottom-card white-bg">
             <div class="view-title">
                 权限组管理列表
-                <div class="table-button-single fs_18" @click="openAdd">
+                <div v-if="btnPromise.add" class="table-button-single fs_18" @click="openAdd">
                     <i class="iconfont icon-xinz fs_16"></i>
                     <span>新增权限组</span>
                 </div>
@@ -40,23 +40,20 @@
                         <td class="td">{{item.edited==='是'?'可编辑':'不可编辑'}}</td>
                         <td class="td">{{item.remark}}</td>
                         <td class="td btn-wrap">
-                            <div class="btn" style="margin-right: 20px" @click="getDetail(item, 0)">
+                            <div v-if="btnPromise.detail" class="btn" style="margin-right: 20px" @click="getDetail(item, 0)">
                                 <i class="fs_18 iconfont icon-xiangq"></i>
                                 <span class="fs_18">详情</span>
                             </div>
-                            <div class="btn" @click.stop="openPop(index)">
-                                <i class="fs_18 iconfont icon-guanli"></i>
-                                <span class="fs_18">管理</span>
-                                <i class="fs_16 iconfont icon-jiant-x" style="margin-left: .2em"></i>
-                                <div class="pop-btn fs_20" v-show="item.btnPopShow">
-                                    <div class="sanjiao"></div>
-                                    <ul class="pop-list">
-                                        <li class="pop-item" @click="del(index)">删除</li>
-                                        <li class="pop-item" v-if="item.edited==='是'" @click="getDetail(item, 1)">修改</li>
-                                        <li class="pop-item" @click="getDetail(item, 2)">设置组成员</li>
-                                    </ul>
-                                </div>
-                            </div>
+                            <el-dropdown trigger="click"  @command="handleChange">
+                                  <span class="el-dropdown-link">
+                                    <i class="iconfont icon-guanli"></i>管理<i class="fs_16 iconfont icon-jiant-x"></i>
+                                  </span>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item :command="{flag:0,index}" v-if="item.edited==='是' && btnPromise.del">删除</el-dropdown-item>
+                                    <el-dropdown-item :command="{flag:1,item}" v-if="item.edited==='是' && btnPromise.editor">修改</el-dropdown-item>
+                                    <el-dropdown-item :command="{flag:2,item}" v-if="item.edited==='是' && btnPromise.set">设置组成员</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </el-dropdown>
                         </td>
                     </tr>
                 </table>
@@ -65,6 +62,7 @@
                     :totalPage="data.total"
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
+                    :currentPage="params.reqParam.page"
             ></l-page>
         </div>
         <add ref="add"></add>
@@ -96,9 +94,6 @@
         detailData: {},
         promiseData: [],
       }
-    },
-    created () {
-      this.getData()
     },
     methods: {
       getData () {
@@ -154,10 +149,23 @@
             arr.forEach(grandfather => {
               grandfather.child.forEach((father, index) => {
                 father.selected = index === 0?true:false
-                re.forEach(children => {
+                re.forEach((children, ci) => {
                   if (children.pid === father.pkId) {
+                    children.child = []
                     father.child.push(children)
                   }
+                })
+              })
+            })
+            arr.forEach(a=>{
+              a.child.forEach(b=>{
+                b.child.forEach((c, index)=>{
+                  c.selected = index === 0? true: false
+                  re.forEach(d=>{
+                    if(d.pid === c.pkId) {
+                      c.child.push(d)
+                    }
+                  })
                 })
               })
             })
@@ -199,6 +207,13 @@
           )
         }).catch(() => {})
       },
+      handleChange(data) {
+        if(data.flag === 0) {
+          this.del(data.index)
+        } else {
+          this.getDetail(data.item, data.flag)
+        }
+      }
     },
     components: {
       Add,
@@ -228,7 +243,7 @@
                 top -2em
         .table-wrap
             width 94%
-            height 70%
-            overflow auto
+            /*height 70%*/
+            /*overflow auto*/
             margin 0 auto
 </style>

@@ -109,6 +109,7 @@
           if(res.data.retCode === 1) {
             res.data.retVal.forEach(item => {
               item.selected = false
+              item.status = this.$method.queryDictionary.call(this, 950, item.status)
             })
             this.data = res.data.retVal
             if(this.data.length===0) {
@@ -151,6 +152,9 @@
             })
           }
         })
+        if(params.length===0) {
+          return
+        }
         this.$confirm('确认删除这条数据?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -200,7 +204,7 @@
                 right 0
         .table-wrap
             margin-top 1em
-            max-height 25em
+            max-height 15em
             overflow auto
         .btn-wrap
             position relative

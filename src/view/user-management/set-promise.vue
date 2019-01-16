@@ -105,28 +105,10 @@
           }
         }).then(res => {
           if (res.data.retCode === 1) {
-            this.$http({
-              url: this.$api + 'produce/resources/rs/groups/listByUser',
-              method: 'post',
-              data: {
-                reqParam: {
-                  uId: this.data.uId,
-                  retType: 2
-                }
-              }
-            }).then(response => {
               res.data.retVal.forEach(item => {
-                item.selected = false
+                item.selected = item.permission===40021?true:false
               })
-                res.data.retVal.forEach(item => {
-                  response.data.retVal.forEach(r => {
-                    if (r.pkId === item.pkId) {
-                      item.selected = true
-                    }
-                  })
-                })
               this.promiseData = res.data.retVal
-            })
           }
         })
       },

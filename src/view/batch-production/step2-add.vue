@@ -35,15 +35,16 @@
         tempData: {}
       }
     },
-    mounted () {
-      this.addTable()
-    },
     methods: {
       hide() {
+        Array.from(document.getElementsByClassName('step2-add-table')).forEach(item=>{
+          document.getElementById('table').removeChild(item)
+        })
         Object.assign(this.$data, this.$options.data())
         this.maskShow = false
       },
       show() {
+        this.addTable()
         this.maskShow = true
       },
       addTable() {
@@ -58,13 +59,11 @@
       },
       tableInput(data) {
         this.tempData[data.id] = data.value
-        console.log(this.tempData)
       },
       tableDel(id) {
         this.$refs.tableContent.removeChild(document.getElementById(id))
         delete this.tempData[id]
         delete this.tempData.id
-        console.log(this.tempData)
       },
       right() {
         let params = []

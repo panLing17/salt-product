@@ -1,12 +1,12 @@
 <template>
     <div class="trace-back-code">
         <div class="top-card white-bg">
-            <div class="top-title view-title">查询</div>
+            <!--<div class="top-title view-title">查询</div>-->
             <div class="search-wrap fs_20">
-                <label class="label-1">追溯码</label>
+                <label class="label-1"><span style="color: #D91C1C;margin-right: 5px">*</span>追溯码</label>
                 <input type="text" v-model="search.reqParam.traceCode">
-                <l-button :style="{'margin': '0 1em 0 2.5em'}" buttonText="查询" @button-click="getInfo" iconName="iconfont icon-chaxx"></l-button>
-                <l-button buttonText="清空" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
+                <l-button v-if="btnPromise.search" :style="{'margin': '11px 1em 11px 2.5em'}" buttonText="查询" @button-click="getInfo" iconName="iconfont icon-chaxx"></l-button>
+                <l-button buttonText="清空" :style="{'margin': '11px 0'}" iconName="iconfont icon-qingk" @button-click="clear"></l-button>
             </div>
         </div>
         <div class="bottom-card white-bg fs_20">
@@ -36,14 +36,14 @@
             </div>
             <div class="tab-content clear-float" v-show="tabItemActive===0">
                 <div class="img">
-                    <img :src="product.imgs[0]?product.imgs[0].img:''" @error="$method.imgError($event)" alt="">
+                    <img :src="product.imgs[0]?product.imgs[0].img:''" @click="$method.magnifier(product.imgs[0]?product.imgs[0].img:'')" @error="$method.imgError($event)" alt="">
                 </div>
                 <table class="table right">
                     <tr class="tr">
                         <td class="td">产品编码</td>
                         <td class="td">{{product.productCode}}</td>
                         <td class="td">生产批号</td>
-                        <td class="td">{{data[itemActive]?data[itemActive].batch:''}}</td>
+                        <td class="td">{{batch.batch}}</td>
                     </tr>
                     <tr class="tr">
                         <td class="td">产品名称</td>
@@ -65,9 +65,9 @@
                     </tr>
                     <tr class="tr">
                         <td class="td">计划产量</td>
-                        <td class="td">{{data[itemActive]?data[itemActive].plans:''}}</td>
+                        <td class="td">{{batch.plans}}</td>
                         <td class="td">实际产量</td>
-                        <td class="td">{{data[itemActive]?data[itemActive].weight:''}}</td>
+                        <td class="td">{{batch.weight}}</td>
                     </tr>
                     <tr class="tr">
                         <td class="td">保质期</td>
@@ -135,7 +135,7 @@
                         <td class="td">{{item.amount}}</td>
                         <td class="td">{{item.place}}</td>
                         <td class="td">{{item.feedUser}}</td>
-                        <td class="td">{{item.feedTime}}</td>
+                        <td class="td" style="overflow: hidden">{{item.feedTime}}</td>
                     </tr>
                 </table>
             </div>
@@ -163,7 +163,7 @@
             </div>
             <div class="tab-content clear-float" v-show="tabItemActive===4">
                 <div class="img">
-                    <img :src="random.report" @error="$method.imgError($event)" alt="">
+                    <img :src="random.report" @click="$method.magnifier(random.report)" @error="$method.imgError($event)" alt="">
                 </div>
                 <table class="table right">
                     <tr class="tr">
@@ -204,7 +204,7 @@
             </div>
             <div class="tab-content clear-float" v-show="tabItemActive===5">
                 <div class="img">
-                    <img :src="check.report" @error="$method.imgError($event)" alt="">
+                    <img :src="check.report" @click="$method.magnifier(check.report)" @error="$method.imgError($event)" alt="">
                 </div>
                 <table class="table right">
                     <tr class="tr">
@@ -266,8 +266,10 @@
 </template>
 
 <script>
+  import {pageCallback} from '@/assets/js/mixin'
   export default {
     name: 'trace-back-code',
+    mixins: [pageCallback],
     data() {
       return {
         tabItemActive: 0,
@@ -299,8 +301,8 @@
         this.search.reqParam.traceCode = ''
       },
       getInfo() {
-        if(this.search.reqParam.traceCode.trim().length===0) {
-          this.$message.warning('请输入追溯码')
+        if(!/^\d{20}$/.test(this.search.reqParam.traceCode)) {
+          this.$message.warning('追溯码格式应为20位数字')
           return
         }
         this.getProduct()
@@ -318,8 +320,12 @@
           data: this.search
         }).then(res => {
           if(res.data.retCode === 1) {
-            res.data.retVal.iodate = this.$method.queryDictionary.call(this, 100, res.data.retVal.iodate)
-            this.product = res.data.retVal
+            if(typeof res.data.retVal === 'undefined') {
+              this.$message('未查到该产品')
+            } else {
+              res.data.retVal.iodate = this.$method.queryDictionary.call(this, 100, res.data.retVal.iodate)
+              this.product = res.data.retVal
+            }
           }
         })
       },
@@ -330,8 +336,10 @@
           data: this.search
         }).then(res => {
           if(res.data.retCode === 1) {
-            res.data.retVal.status = this.$method.queryDictionary.call(this, 950, res.data.retVal.status)
-            this.batch = res.data.retVal
+            if(typeof res.data.retVal !=='undefined') {
+              res.data.retVal.status = this.$method.queryDictionary.call(this, 950, res.data.retVal.status)
+              this.batch = res.data.retVal
+            }
           }
         })
       },
@@ -343,7 +351,7 @@
         }).then(res => {
           if(res.data.retCode === 1) {
             res.data.retVal.forEach(item=>{
-              item.masterType = this.$method.queryDictionary.call(this, 930, item.masterType)
+              item.masterType = this.$method.queryDictionary.call(this, 130, item.masterType)
             })
             this.feeds = res.data.retVal
           }
@@ -356,8 +364,10 @@
           data: this.search
         }).then(res => {
           if(res.data.retCode === 1) {
-            res.data.retVal.status = this.$method.queryDictionary.call(this, 950, res.data.retVal.status)
-            this.tasks = res.data.retVal
+            if(typeof res.data.retVal !=='undefined') {
+              res.data.retVal.status = this.$method.queryDictionary.call(this, 950, res.data.retVal.status)
+              this.tasks = res.data.retVal
+            }
           }
         })
       },
@@ -368,7 +378,9 @@
           data: this.search
         }).then(res => {
           if(res.data.retCode === 1) {
-            this.random = res.data.retVal?res.data.retVal:{}
+            if(typeof res.data.retVal !=='undefined') {
+              this.random = res.data.retVal?res.data.retVal:{}
+            }
           }
         })
       },
@@ -379,7 +391,10 @@
           data: this.search
         }).then(res => {
           if(res.data.retCode === 1) {
-            this.check = res.data.retVal?res.data.retVal:{}
+            if(typeof res.data.retVal !=='undefined') {
+              this.check = res.data.retVal?res.data.retVal:{}
+            }
+
           }
         })
       },
@@ -391,7 +406,7 @@
           data: this.params
         }).then(res => {
           if(res.data.retCode === 1) {
-            res.data.retVal.dataList.forEach(item=>{
+            res.data.retVal.forEach(item=>{
               item.billType = this.$method.queryDictionary.call(this, 960, item.billType)
             })
             this.data = res.data.retVal
